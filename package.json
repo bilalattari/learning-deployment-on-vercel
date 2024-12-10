@@ -1,11 +1,17 @@
 {
-  "name": "manegementsystem",
-  "version": "1.0.0",
-  "description": "This is A Saylani Manegement System",
-  "main": "index.js",
-  "scripts": {
-    "test": "npm run Start"
-  },
-  "author": "",
-  "license": "ISC"
+	"name": "manegementsystem",
+	"version": "1.0.0",
+	"description": "This is A Saylani Manegement System",
+	"main": "index.js",
+	"scripts": {
+		"test": "npm run start"
+	},
+	"type": "module",
+	"author": "",
+	"license": "ISC",
+	"dependencies": {
+		"cors": "^2.8.5",
+		"express": "^4.21.2",
+		"nodemon": "^3.1.7"
+	}
 }
