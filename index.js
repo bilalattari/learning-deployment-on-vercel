@@ -1,4 +1,5 @@
 import express from "express";
+import usersRoutes from "./routers/users.js";
 
 const app = express();
 const PORT = 4010;
@@ -9,6 +10,8 @@ const middleware = (req, res, next) => {
 
 app.use(middleware);
 app.use(express.json());
+
+app.use("/users", usersRoutes);
 
 app.get("/", (req, res) => {
 	const name = "Asheel";

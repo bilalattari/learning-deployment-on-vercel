@@ -4,6 +4,8 @@
 	"description": "This is A Saylani Manegement System",
 	"main": "index.js",
 	"scripts": {
+		"dev": "nodemon index.js",
+		"start": "node index.js",
 		"test": "npm run start"
 	},
 	"type": "module",
