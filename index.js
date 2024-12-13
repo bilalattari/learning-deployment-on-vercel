@@ -1,5 +1,6 @@
 import express from "express";
 import usersRoutes from "./routers/users.js";
+import mongoose from "mongoose";
 
 const app = express();
 const PORT = 4010;
@@ -10,6 +11,12 @@ const middleware = (req, res, next) => {
 
 app.use(middleware);
 app.use(express.json());
+
+console.log(process.env.MONGO_URI);
+mongoose
+	.connect(process.env.MONGO_URI)
+	.then(() => console.log("mongoDB Connected"))
+	.catch((err) => console.log(`err===> ${err}`));
 
 app.use("/users", usersRoutes);
 
