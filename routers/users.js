@@ -1,6 +1,6 @@
 import express from "express";
 const router = express.Router();
-// import User from "../models/User.js";
+import User from "../model/User.js";
 
 const users = [
 	{
@@ -15,22 +15,8 @@ const users = [
 	},
 ];
 
-// router.post("/", async (req, res) => {
-// 	const { fullname, email } = req.body;
-// 	let newUser = new User({
-// 		fullname,
-// 		email,
-// 	});
-// 	newUser = await newUser.save();
-// 	res.status(201).json({
-// 		msg: "User added successfully",
-// 		error: false,
-// 		data: newUser,
-// 	});
-// });
-
 router.get("/", async (req, res) => {
-	// const users = await User.find();
+	const users = await User.find();
 	res.status(200).json({
 		msg: "User fetched successfully",
 		error: false,
