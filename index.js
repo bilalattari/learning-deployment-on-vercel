@@ -26,10 +26,9 @@
 
 // app.listen(PORT, () => console.log("server is start at port 4010"));
 
-
-
 import express from "express";
 import usersRoutes from "./routers/users.js";
+import trainersRoutes from "./routers/trainers.js";
 import dotenv from "dotenv";
 import { connectDB } from "./lib/DB/connectDB.js";
 
@@ -39,7 +38,7 @@ dotenv.config({ path: ".env.local" });
 const app = express();
 const PORT = 4010;
 
-connectDB()
+connectDB();
 
 // Middleware to log requests
 const middleware = (req, res, next) => {
@@ -51,6 +50,7 @@ app.use(middleware);
 app.use(express.json());
 
 app.use("/users", usersRoutes);
+app.use("/trainers", trainersRoutes);
 
 app.get("/", (req, res) => {
 	const obj = {

@@ -2,19 +2,6 @@ import express from "express";
 const router = express.Router();
 import User from "../model/User.js";
 
-const users = [
-	{
-		id: 1,
-		name: "asheel ahmed siddiqui",
-		password: "asheel1212",
-	},
-	{
-		id: 2,
-		name: "ahmed",
-		password: "siddiqui2004",
-	},
-];
-
 router.get("/", async (req, res) => {
 	const users = await User.find();
 	res.status(200).json({
@@ -24,65 +11,19 @@ router.get("/", async (req, res) => {
 	});
 });
 
-router.post("/", (req, res) => {
-	const { name, password } = req.body;
-	users.push({
-		name,
-		password,
-		id: users.length + 1,
-	});
+router.post("/", async (req, res) => {
+	const { name, email, password, role } = req.body;
+	// Create new user
+	const newUser = new User({ name, email, password, role });
+
+	// Save to database
+	const savedUser = await newUser.save();
 
 	res.status(201).json({
 		msg: "User added successfully",
-		data: users,
+		data: savedUser,
 		error: false,
 	});
 });
-
-// router.get("/:id", async (req, res) => {
-// 	try {
-// 		const user = await User.findById(req.params.id);
-// 		// const user = await User.findOne({_id : req.params.id})
-// 		if (!user)
-// 			return res.status(404).json({
-// 				error: true,
-// 				msg: "User not found",
-// 				data: null,
-// 			});
-
-// 		res.status(200).json({
-// 			msg: "User found successfully",
-// 			error: false,
-// 			data: user,
-// 		});
-// 	} catch (err) {
-// 		res.status(500).json({
-// 			error: true,
-// 			msg: "Something went wrong",
-// 			data: null,
-// 		});
-// 	}
-// });
-
-// router.put("/:id", async (req, res) => {
-// 	const { fullname, email } = req.body;
-// 	const user = await User.findById(req.params.id);
-// 	if (!user)
-// 		return res.status(404).json({
-// 			error: true,
-// 			msg: "User not found",
-// 			data: null,
-// 		});
-// 	if (fullname) user.fullname = fullname;
-// 	if (email) user.email = email;
-
-// 	await user.save();
-
-// 	res.status(200).json({
-// 		msg: "User updated successfully",
-// 		error: false,
-// 		data: user,
-// 	});
-// });
 
 export default router;
