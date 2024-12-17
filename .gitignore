@@ -16,3 +16,4 @@ package-lock.json
 # IDE or editor folders (e.g., VS Code, Sublime Text)
 .vscode/
 .idea/
+.vercel
