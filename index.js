@@ -1,34 +1,8 @@
-// import express from "express";
-// import usersRoutes from "./routers/users.js";
-// import mongoose from "mongoose";
-
-// const app = express();
-// const PORT = 4010;
-
-// const middleware = (req, res, next) => {
-// 	next();
-// };
-
-// app.use(middleware);
-// app.use(express.json());
-
-// app.use("/users", usersRoutes);
-
-// app.get("/", (req, res) => {
-// 	const name = "Asheel";
-// 	const obj = {
-// 		name: "Asheel Ahmed Siddiqui",
-// 		getReqTime: `Date: ${new Date().toDateString()}, Time: ${new Date().toLocaleTimeString()}`,
-// 	};
-// 	res.send(obj);
-// 	console.log("get ki request");
-// });
-
-// app.listen(PORT, () => console.log("server is start at port 4010"));
-
 import express from "express";
 import usersRoutes from "./routers/users.js";
 import trainersRoutes from "./routers/trainers.js";
+import coursesRoutes from "./routers/courses.js";
+import batchesRoutes from "./routers/batches.js";
 import dotenv from "dotenv";
 import { connectDB } from "./lib/DB/connectDB.js";
 
@@ -51,6 +25,7 @@ app.use(express.json());
 
 app.use("/users", usersRoutes);
 app.use("/trainers", trainersRoutes);
+app.use("/courses", coursesRoutes);
 
 app.get("/", (req, res) => {
 	const obj = {

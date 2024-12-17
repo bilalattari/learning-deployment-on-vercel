@@ -9,13 +9,13 @@ const sectionSchema = new Schema(
 			ref: "Course",
 			required: true,
 		},
-		batch: {
-			type: mongoose.Schema.Types.ObjectId,
+		batchID: {
+			type: Schema.Types.ObjectId,
 			ref: "Batch",
 			required: true,
 		},
 		teacher: {
-			type: mongoose.Schema.Types.ObjectId,
+			type: Schema.Types.ObjectId,
 			ref: "User",
 			required: true,
 		},
