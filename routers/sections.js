@@ -1,26 +1,67 @@
-import express from "express";
-const router = express.Router();
-import Section from "../model/Section.js";
+// Get all sections
+import express from 'express';
+import Course from '../model/Course.js';
+import Batch from '../model/Batch.js';
+import Section from '../model/Section.js';
 
-router.get("/", async (req, res) => {
-	const sections = await Course.find();
-	res.status(200).json({
-		msg: "sections fetched successfully",
-		error: false,
-		data: sections,
-	});
+const router = express.Router();
+
+// Get all sections
+router.get('/', async (req, res) => {
+  try {
+    const sections = await Section.find()
+      .populate('course', 'title')
+      .populate('batch', 'title');
+    res.status(200).json(sections);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
-router.post("/", async (req, res) => {
-	const { title, description, duration } = req.body;
-	const newCourse = new Course({ title, description, duration });
-	const savedCourse = await newCourse.save();
+router.post('/', async (req, res) => {
+  try {
+    const { title, description, course, batch, status } = req.body;
+    const newSection = new Section({ title, description, course, batch, status });
+    await newSection.save();
+    res.status(201).json(newSection);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
 
-	res.status(201).json({
-		msg: "course added successfully",
-		data: savedCourse,
-		error: false,
-	});
+// Update section
+router.put('/:id', async (req, res) => {
+  try {
+    const { title, description, course, batch, status } = req.body;
+    const updatedSection = await Section.findByIdAndUpdate(req.params.id, {
+      title,
+      description,
+      course,
+      batch,
+      status,
+    }, { new: true }).populate('course', 'title').populate('batch', 'title');
+    res.json(updatedSection);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+});
+
+
+// Delete section
+router.delete('/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const deletedSection = await Section.findByIdAndDelete(id);
+
+    if (!deletedSection) {
+      return res.status(404).json({ message: 'Section not found' });
+    }
+
+    res.status(200).json({ message: 'Section deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error deleting section', error });
+  }
 });
 
 export default router;

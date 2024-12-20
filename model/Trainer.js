@@ -10,6 +10,7 @@ const trainerSchema = new Schema(
 		timing: { type: String, required: true },
 		course: { type: String, required: true },
 		batch: { type: String, required: true },
+		section : []
 	},
 	{ timestamps: true }
 );
