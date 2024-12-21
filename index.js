@@ -16,16 +16,18 @@ const PORT = 4010;
 
 // Connect to the database
 connectDB();
-
 // CORS configuration to allow your frontend
 app.use(
 	cors({
-		origin: "http://localhost:5173", // Allow the specific frontend address
-		methods: ["GET", "POST", "PUT", "DELETE"], // Allowed HTTP methods
-		allowedHeaders: ["Content-Type", "Authorization"], // Allowed headers
+	  origin: [
+		"http://localhost:5173",  // Allow localhost for development
+		"https://manegement-system.vercel.app",  // Allow Vercel URL for production
+	  ], // Allow these specific frontend addresses
+	  methods: ["GET", "POST", "PUT", "DELETE"], // Allowed HTTP methods
+	  allowedHeaders: ["Content-Type", "Authorization"], // Allowed headers
 	})
-);
-
+  );
+  
 // Middleware to log requests
 const middleware = (req, res, next) => {
 	console.log(`Request Method: ${req.method}, Request URL: ${req.url}`);
