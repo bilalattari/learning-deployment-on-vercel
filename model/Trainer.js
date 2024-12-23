@@ -5,13 +5,16 @@ const trainerSchema = new Schema(
   {
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
-    role: { type: String, default: "trainer", required: true }, // fixed the typo
+    role: { type: String, default: "trainer", required: true },
     salary: { type: Number, required: true },
-    field: { type: String, required: true },
-    timing: { type: String, required: true },
-    course: { type: String, required: true },
-    batch: { type: String, required: true },
-    section: { type: [String], default: [] } // assuming section is an array of strings
+    specialization: { type: String },
+    // timing: { type: String, required: true },
+    course: { type: mongoose.Schema.Types.ObjectId, ref: 'Course', required: true },
+    batch: { type: mongoose.Schema.Types.ObjectId, ref: 'Batch', required: true },
+    section: { type: mongoose.Schema.Types.ObjectId, ref: 'Section', required: true },
+    password: { type: String, required: true }, // New field for password
+    image: { type: String },
+    resume: { type: String },
   },
   { timestamps: true }
 );

@@ -2,6 +2,7 @@ import express from "express";
 import usersRoutes from "./routers/users.js";
 import trainersRoutes from "./routers/trainers.js";
 import coursesRoutes from "./routers/courses.js";
+import campusRoutes from "./routers/campus.js";
 import batchesRoutes from "./routers/batches.js";
 import sectionsRoutes from "./routers/sections.js";
 import dotenv from "dotenv";
@@ -12,7 +13,7 @@ import cors from "cors";
 dotenv.config({ path: ".env.local" });
 
 const app = express();
-const PORT = 4010;
+const PORT = process.env.PORT || 4010;
 
 // Connect to the database
 connectDB();
@@ -41,6 +42,7 @@ app.use(express.json());
 app.use("/users", usersRoutes);
 app.use("/trainers", trainersRoutes);
 app.use("/courses", coursesRoutes);
+app.use("/campus", campusRoutes);
 app.use("/batches", batchesRoutes);
 app.use("/section", sectionsRoutes);
 

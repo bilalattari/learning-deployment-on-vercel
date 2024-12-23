@@ -6,7 +6,7 @@ import Course from "../model/Course.js";
 cloudinary.config({
 	cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
 	api_key: process.env.CLOUDINARY_API_KEY,
-	api_secret: process.env.CLOUDINARY_API_SECRET,
+	api_secret: process.env.CLOUDINARY_API_KEY,
 });
 
 const router = express.Router();
@@ -20,37 +20,67 @@ router.get("/", async (req, res) => {
 	});
 });
 
+// router.post("/", async (req, res) => {
+//   const { title, description, duration, thumbnail } = req.body;
+
+//   try {
+//     // Upload image to Cloudinary
+//     const uploadedImage = await cloudinary.v2.uploader.upload(thumbnail, {
+//       folder: "courses", // Optionally specify a folder in Cloudinary
+//     });
+
+//     // Save course with image URL
+//     const newCourse = new Course({
+//       title,
+//       description,
+//       duration,
+//       thumbnail: uploadedImage.secure_url, // Save the Cloudinary image URL
+//     });
+
+//     const savedCourse = await newCourse.save();
+
+//     res.status(201).json({
+//       msg: "course added successfully",
+//       data: savedCourse,
+//       error: false,
+//     });
+//   } catch (error) {
+//     console.error("Error uploading image to Cloudinary:", error);
+//     res.status(500).json({
+//       msg: "Failed to add course",
+//       error: true,
+//     });
+//   }
+// });
+
 router.post("/", async (req, res) => {
-  const { title, description, duration, thumbnail } = req.body;
+	const { title, description, duration, thumbnail } = req.body;
 
-  try {
-    // Upload image to Cloudinary
-    const uploadedImage = await cloudinary.v2.uploader.upload(thumbnail, {
-      folder: "courses", // Optionally specify a folder in Cloudinary
-    });
+	try {
+		const uploadedImage = await cloudinary.uploader.upload(thumbnail, {
+			folder: "courses",
+		});
 
-    // Save course with image URL
-    const newCourse = new Course({
-      title,
-      description,
-      duration,
-      thumbnail: uploadedImage.secure_url, // Save the Cloudinary image URL
-    });
+		const newCourse = new Course({
+			title,
+			description,
+			duration,
+			thumbnail: uploadedImage.secure_url,
+		});
 
-    const savedCourse = await newCourse.save();
-
-    res.status(201).json({
-      msg: "course added successfully",
-      data: savedCourse,
-      error: false,
-    });
-  } catch (error) {
-    console.error("Error uploading image to Cloudinary:", error);
-    res.status(500).json({
-      msg: "Failed to add course",
-      error: true,
-    });
-  }
+		const savedCourse = await newCourse.save();
+		res.status(201).json({
+			msg: "Course added successfully",
+			data: savedCourse,
+			error: false,
+		});
+	} catch (error) {
+		console.error("Error Details:", error); // Log detailed error
+		res.status(500).json({
+			msg: "Failed to add course",
+			error: error.message, // Send error message for debugging
+		});
+	}
 });
 
 
