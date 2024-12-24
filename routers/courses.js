@@ -2,11 +2,17 @@ import express from "express";
 import cloudinary from "cloudinary";
 import Course from "../model/Course.js";
 
-// Set up Cloudinary config
+// // Set up Cloudinary config
+// cloudinary.config({
+// 	cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+// 	api_key: process.env.CLOUDINARY_API_KEY,
+// 	api_secret: process.env.CLOUDINARY_API_KEY,
+// });
+// Cloudinary Configuration
 cloudinary.config({
-	cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-	api_key: process.env.CLOUDINARY_API_KEY,
-	api_secret: process.env.CLOUDINARY_API_KEY,
+	cloud_name: 'duvdqnoht',
+	api_key: '538347923483567',
+	api_secret: '7TQyo_k4m7_boBRTT8viSXuLix0'
 });
 
 const router = express.Router();
