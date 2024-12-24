@@ -304,175 +304,80 @@ import cloudinary from 'cloudinary';
 import Trainer from '../model/Trainer.js';
 
 // Cloudinary Configuration
-cloudinary.v2.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET
+// cloudinary.v2.config({
+//   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+//   api_key: process.env.CLOUDINARY_API_KEY,
+//   api_secret: process.env.CLOUDINARY_API_SECRET
+// });
+
+// Cloudinary Configuration
+cloudinary.config({
+    cloud_name: 'duvdqnoht',
+    api_key: '538347923483567',
+    api_secret: '7TQyo_k4m7_boBRTT8viSXuLix0'
 });
 
 const router = express.Router();
 
 // Routes
 
-// router.post("/", async (req, res) => {
-//   const {
-//     Name,
-//     Email,
-//     Phone,
-//     Whatsapp,
-//     Cnic,
-//     Salary,
-//     Specialization,
-//     Course,
-//     Batch,
-//     Section,
-//     Password,
-//     Resume,
-//     Image,
-//   } = req.body;
-
-// 	try {
-// 		const uploadedImage = await cloudinary.uploader.upload(Image, {
-//       folder: 'trainers/images'
-// 		});
-
-//     const uploadedResume = await cloudinary.uploader.upload(Resume, {
-//       folder: 'trainers/images'
-// 		});
-
-// 		const newTrainer = new Trainer({
-//       Name,
-//       Email,
-//       Phone,
-//       Whatsapp,
-//       Cnic,
-//       Salary,
-//       Specialization,
-//       Course,
-//       Batch,
-//       Section,
-//       Password,
-//       Image: uploadedImage.secure_url,
-//       Resume: uploadedResume.secure_url
-// 		});
-
-// 		const savedTrainer = await newTrainer.save();
-// 		res.status(201).json({
-// 			msg: "Trainer added successfully",
-// 			data: savedTrainer,
-// 			error: false,
-// 		});
-// 	} catch (error) {
-// 		console.error("Error Details:", error); // Log detailed error
-// 		res.status(500).json({
-// 			msg: "Failed to add Trainer",
-// 			error: error.message, // Send error message for debugging
-// 		});
-// 	}
-// });
-
-
 router.post("/", async (req, res) => {
   const {
-    name,
-    email,
-    role,
-    salary,
-    specialization,
-    course,
-    batch,
-    section,
-    password,
-    image,
-    resume,
+    Name,
+    Email,
+    Phone,
+    Whatsapp,
+    Cnic,
+    Salary,
+    Specialization,
+    Course,
+    Batch,
+    Section,
+    Password,
+    Resume,
+    Image,
   } = req.body;
 
-  try {
-    // Validation for required fields
-    if (
-      !name ||
-      !email ||
-      !salary ||
-      !course ||
-      !batch ||
-      !section ||
-      !password
-    ) {
-      return res.status(400).json({
-        msg: "Please fill all required fields",
-        error: true,
-      });
-    }
+	try {
+		const uploadedImage = await cloudinary.uploader.upload(Image, {
+      folder: 'trainers/images'
+		});
 
-    // Validate ObjectId fields
-    if (
-      !mongoose.Types.ObjectId.isValid(course) ||
-      !mongoose.Types.ObjectId.isValid(batch) ||
-      !mongoose.Types.ObjectId.isValid(section)
-    ) {
-      return res.status(400).json({
-        msg: "Invalid course, batch, or section ID",
-        error: true,
-      });
-    }
+    const uploadedResume = await cloudinary.uploader.upload(Resume, {
+      folder: 'trainers/images'
+		});
 
-    // Upload image to Cloudinary (if provided)
-    let uploadedImageUrl = image;
-    let uploadedResumeUrl = resume;
+		const newTrainer = new Trainer({
+      Name,
+      Email,
+      Phone,
+      Whatsapp,
+      Cnic,
+      Salary,
+      Specialization,
+      Course,
+      Batch,
+      Section,
+      Password,
+      Image: uploadedImage.secure_url,
+      Resume: uploadedResume.secure_url
+		});
 
-    if (image && !image.startsWith("http")) {
-      const uploadedImage = await cloudinary.uploader.upload(image, {
-        folder: "trainers/images",
-      });
-      uploadedImageUrl = uploadedImage.secure_url;
-    }
-
-    if (resume && !resume.startsWith("http")) {
-      const uploadedResume = await cloudinary.uploader.upload(resume, {
-        folder: "trainers/resumes",
-      });
-      uploadedResumeUrl = uploadedResume.secure_url;
-    }
-
-    // Create Trainer document
-    const newTrainer = new Trainer({
-      name,
-      email,
-      role: role || "trainer", // Default role
-      salary,
-      specialization,
-      course,
-      batch,
-      section,
-      password,
-      image: uploadedImageUrl,
-      resume: uploadedResumeUrl,
-    });
-
-    // Save trainer to database
-    const savedTrainer = await newTrainer.save();
-    res.status(201).json({
-      msg: "Trainer added successfully",
-      data: savedTrainer,
-      error: false,
-    });
-  } catch (error) {
-    console.error("Error Details:", error);
-
-    // Handle duplicate email error
-    if (error.code === 11000) {
-      return res.status(400).json({
-        msg: "Email already exists",
-        error: true,
-      });
-    }
-
-    res.status(500).json({
-      msg: "Failed to add Trainer",
-      error: error.message,
-    });
-  }
+		const savedTrainer = await newTrainer.save();
+		res.status(201).json({
+			msg: "Trainer added successfully",
+			data: savedTrainer,
+			error: false,
+		});
+	} catch (error) {
+		console.error("Error Details:", error); // Log detailed error
+		res.status(500).json({
+			msg: "Failed to add Trainer",
+			error: error.message, // Send error message for debugging
+		});
+	}
 });
+
 
 
 // GET: Fetch Trainers

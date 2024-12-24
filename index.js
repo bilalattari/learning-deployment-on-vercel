@@ -5,6 +5,7 @@ import coursesRoutes from "./routers/courses.js";
 import campusRoutes from "./routers/campus.js";
 import batchesRoutes from "./routers/batches.js";
 import sectionsRoutes from "./routers/sections.js";
+import studentRoutes from './routers/student.js'
 import dotenv from "dotenv";
 import { connectDB } from "./lib/DB/connectDB.js";
 import cors from "cors";
@@ -45,6 +46,7 @@ app.use("/courses", coursesRoutes);
 app.use("/campus", campusRoutes);
 app.use("/batches", batchesRoutes);
 app.use("/section", sectionsRoutes);
+app.use("/student", studentRoutes);
 
 // Home Route
 app.get("/", (req, res) => {
