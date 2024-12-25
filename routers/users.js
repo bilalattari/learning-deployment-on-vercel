@@ -32,6 +32,7 @@ import express from "express";
 import { login, signUp } from "../controllers/authController.js";
 import jwt from "jsonwebtoken"; // Import JWT for token verification
 import User from "../model/User.js";
+import sendResponse from "../helpers/sendResponse.js";
 
 const router = express.Router();
 
@@ -51,18 +52,44 @@ const verifyToken = (req, res, next) => {
 	  res.status(400).json({ msg: "Invalid token" });
 	}
   };
+
+  export function authenticateUser(req, res, next) {
+	const bearerTOken = req.headers?.authorization;
+	console.log("bearerTOken=>", bearerTOken);
+	if (!bearerTOken)
+	  return sendResponse(res, 400, null, true, "Token Not Provided");
+  
+	const token = bearerTOken.split(" ")[1];
+  
+	const decoded = jwt.verify(token, process.env.JWT_SECRET);
+  
+	req.user = decoded;
+	console.log("decoded=>", decoded);
+	next();
+  }
   
   // Route to get user data by verifying the token
-  router.get("/profile", verifyToken, async (req, res) => {
+//   router.get("/profile", verifyToken, async (req, res) => {
+// 	try {
+// 	  // Fetch user data based on the ID from the token
+// 	  const user = await User.findById(req.user.userId).select("-password");
+// 	  if (!user) {
+// 		return res.status(404).json({ msg: "User not found" });
+// 	  }
+// 	  res.json(user);
+// 	} catch (error) {
+// 	  res.status(500).json({ msg: "Server error", error: error.message });
+// 	}	
+//   });
+
+router.get("/profile", authenticateUser, async (req, res) => {
 	try {
-	  // Fetch user data based on the ID from the token
-	  const user = await User.findById(req.user.userId).select("-password");
-	  if (!user) {
-		return res.status(404).json({ msg: "User not found" });
-	  }
-	  res.json(user);
-	} catch (error) {
-	  res.status(500).json({ msg: "Server error", error: error.message });
+	  const user = await User.findOne({
+		_id: req.user._id,
+	  });
+	  sendResponse(res, 200, user, false, "User Updated Successfully");
+	} catch (err) {
+	  sendResponse(res, 500, null, true, "Something went wrong");
 	}
   });
 
