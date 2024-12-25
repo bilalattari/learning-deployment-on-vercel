@@ -8,7 +8,6 @@ const trainerSchema = new Schema(
     role: { type: String, default: "trainer", required: true },
     salary: { type: Number, required: true },
     specialization: { type: String },
-    // timing: { type: String, required: true },
     course: { type: mongoose.Schema.Types.ObjectId, ref: 'Course', required: true },
     batch: { type: mongoose.Schema.Types.ObjectId, ref: 'Batch', required: true },
     section: { type: mongoose.Schema.Types.ObjectId, ref: 'Section', required: true },

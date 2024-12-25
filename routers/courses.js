@@ -26,39 +26,6 @@ router.get("/", async (req, res) => {
 	});
 });
 
-// router.post("/", async (req, res) => {
-//   const { title, description, duration, thumbnail } = req.body;
-
-//   try {
-//     // Upload image to Cloudinary
-//     const uploadedImage = await cloudinary.v2.uploader.upload(thumbnail, {
-//       folder: "courses", // Optionally specify a folder in Cloudinary
-//     });
-
-//     // Save course with image URL
-//     const newCourse = new Course({
-//       title,
-//       description,
-//       duration,
-//       thumbnail: uploadedImage.secure_url, // Save the Cloudinary image URL
-//     });
-
-//     const savedCourse = await newCourse.save();
-
-//     res.status(201).json({
-//       msg: "course added successfully",
-//       data: savedCourse,
-//       error: false,
-//     });
-//   } catch (error) {
-//     console.error("Error uploading image to Cloudinary:", error);
-//     res.status(500).json({
-//       msg: "Failed to add course",
-//       error: true,
-//     });
-//   }
-// });
-
 router.post("/", async (req, res) => {
 	const { title, description, duration, thumbnail } = req.body;
 
