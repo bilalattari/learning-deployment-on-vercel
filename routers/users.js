@@ -87,6 +87,8 @@ router.get("/profile", authenticateUser, async (req, res) => {
 	  const user = await User.findOne({
 		_id: req.user._id,
 	  });
+
+	  
 	  sendResponse(res, 200, user, false, "User Updated Successfully");
 	} catch (err) {
 	  sendResponse(res, 500, null, true, "Something went wrong");
