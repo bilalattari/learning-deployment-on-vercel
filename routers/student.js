@@ -139,7 +139,7 @@ router.post('/', upload.single('image'), async (req, res) => {
     try {
         const {
             name, email, fatherName, phoneNo, whatsappNo, cnic, fatherCnic,
-            qualification, campus, trainer, course, batch, section, gender, address
+            qualification, campus, trainer, course, batch, section, gender, address , password
         } = req.body;
 
         // Generate Roll Number
@@ -171,6 +171,7 @@ router.post('/', upload.single('image'), async (req, res) => {
             section,
             gender,
             address,
+            password,
             rollNumber,
             image: imageUpload.secure_url,
             qrCode
@@ -187,10 +188,11 @@ router.post('/', upload.single('image'), async (req, res) => {
                 <h2>Dear ${name},</h2>
                 <p>Congratulations! You have been successfully registered for the training program.</p>
                 <p><strong>Roll Number:</strong> ${rollNumber}</p>
+                <p><strong>Your Password:</strong> ${password}</p>
                 <p>We are excited to have you onboard and look forward to seeing you grow and succeed!</p>
                 <p>If you have any questions, feel free to contact us.</p>
                 <br>
-                <p>Best Regards,</p>
+                <p>SMIT Regards,</p>
                 <p><strong>Your Training Team</strong></p>
             `
         };

@@ -16,6 +16,7 @@ const studentSchema = new mongoose.Schema({
     section: { type: mongoose.Schema.Types.ObjectId, ref: 'Section', required: true },
     gender: { type: String, enum: ['Male', 'Female'], required: true },
     address: { type: String, required: true },
+    password: { type: String, required: true },
     rollNumber: { type: String, unique: true, required: true },
     image: { type: String, required: true },
     qrCode: { type: String, required: true },

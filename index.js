@@ -9,12 +9,15 @@ import studentRoutes from './routers/student.js'
 import dotenv from "dotenv";
 import { connectDB } from "./lib/DB/connectDB.js";
 import cors from "cors";
+import cookieParser from 'cookie-parser';
 
 // Load environment variables from .env.local
 dotenv.config({ path: ".env.local" });
 
 const app = express();
 const PORT = process.env.PORT || 4010;
+
+app.use(cookieParser()); // Parse cookies
 
 // Connect to the database
 connectDB();
@@ -27,6 +30,7 @@ app.use(
 	  ], // Allow these specific frontend addresses
 	  methods: ["GET", "POST", "PUT", "DELETE"], // Allowed HTTP methods
 	  allowedHeaders: ["Content-Type", "Authorization"], // Allowed headers
+	  credentials: true,              // Allows cookies to be sent
 	})
   );
   
