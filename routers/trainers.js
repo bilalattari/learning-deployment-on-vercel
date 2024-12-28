@@ -1,15 +1,9 @@
-// Imports
-import express from 'express';
+import express from "express";
+import Trainer from "../model/Trainer.js";
+import multer from "multer";
 import cloudinary from 'cloudinary';
-import Trainer from '../model/Trainer.js';
-import multer from 'multer';
 
-// Cloudinary Configuration
-// cloudinary.v2.config({
-//   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-//   api_key: process.env.CLOUDINARY_API_KEY,
-//   api_secret: process.env.CLOUDINARY_API_SECRET
-// });
+const router = express.Router();
 
 // Cloudinary Configuration
 cloudinary.config({
@@ -18,144 +12,58 @@ cloudinary.config({
   api_secret: '7TQyo_k4m7_boBRTT8viSXuLix0'
 });
 
-const upload = multer({ dest: 'uploads/' });
+// Multer Configuration
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 
-const router = express.Router();
+// Cloudinary upload function for images and resume
+const uploadToCloudinary = (file) => {
+  return new Promise((resolve, reject) => {
+    cloudinary.v2.uploader.upload_stream({ resource_type: "auto" }, (error, result) => {
+      if (error) reject(error);
+      resolve(result);
+    }).end(file.buffer);
+  });
+};
 
 
+// Add Trainer (POST)
+router.post("/", upload.fields([{ name: 'image', maxCount: 1 }, { name: 'resume', maxCount: 1 }]), async (req, res) => {
+  try {
+    // Upload image and resume to Cloudinary
+    const imageResult = await uploadToCloudinary(req.files['image'][0]);
+    const resumeResult = await uploadToCloudinary(req.files['resume'][0]);
 
-// // Apply middleware to handle file uploads
-// router.post(
-//   "/",
-//   upload.fields([
-//     { name: "image", maxCount: 1 },
-//     { name: "resume", maxCount: 1 },
-//   ]),
-//   async (req, res) => {
-//     try {
-//       // DEBUG: Log uploaded files and body
-//       console.log("Files:", req.files);
-//       console.log("Body:", req.body);
+    // Create a new trainer
+    const newTrainer = new Trainer({
+      name: req.body.Name,
+      email: req.body.Email,
+      phone: req.body.Phone,
+      whatsapp: req.body.Whatsapp,
+      cnic: req.body.Cnic,
+      salary: req.body.Salary,
+      address: req.body.address,
+      specialization: req.body.Specialization,
+      course: req.body.Course,
+      batch: req.body.Batch,
+      section: req.body.Section,
+      password: req.body.Password,
+      image: imageResult.secure_url,
+      resume: resumeResult.secure_url,
+    });
 
-//       // Check if files are uploaded
-//       if (!req.files || !req.files.image || !req.files.resume) {
-//         return res.status(400).json({ msg: "Image and Resume are required." });
-//       }
+    // Save to the database
+    await newTrainer.save();
 
-//       // Cloudinary uploads
-//       const imageBuffer = req.files.image[0].buffer.toString("base64");
-//       const resumeBuffer = req.files.resume[0].buffer.toString("base64");
+    res.status(200).json({ message: 'Trainer added successfully', trainer: newTrainer });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to upload files or save trainer', error: error.message });
+  }
+});
 
-//       const imageUpload = await cloudinary.uploader.upload(
-//         `data:image/png;base64,${imageBuffer}`,
-//         { folder: "trainers/images" }
-//       );
 
-//       const resumeUpload = await cloudinary.uploader.upload(
-//         `data:application/pdf;base64,${resumeBuffer}`,
-//         { folder: "trainers/resumes" }
-//       );
-
-//       // Save Trainer to database
-//       const newTrainer = new Trainer({
-//         name: req.body.name,
-//         email: req.body.email,
-//         phone: req.body.phone,
-//         whatsapp: req.body.whatsapp,
-//         cnic: req.body.cnic,
-//         salary: req.body.salary,
-//         address: req.body.address,
-//         specialization: req.body.specialization,
-//         course: req.body.course,
-//         batch: req.body.batch,
-//         section: req.body.section,
-//         password: req.body.password,
-//         image: imageUpload.secure_url,
-//         resume: resumeUpload.secure_url,
-//       });
-
-//       const savedTrainer = await newTrainer.save();
-
-//       res.status(201).json({
-//         msg: "Trainer added successfully",
-//         data: savedTrainer,
-//         error: false,
-//       });
-//     } catch (error) {
-//       console.error("Error:", error.message);
-//       res.status(500).json({ msg: "Failed to add trainer", error: error.message });
-//     }
-//   }
-// );
-
-// Routes
-
-// router.post("/", async (req, res) => {
-//   const {
-//     name,
-//     email,
-//     phone,
-//     whatsapp,
-//     cnic,
-//     salary,
-//     specialization,
-//     course,
-//     batch,
-//     section,
-//     password,
-//     resume,
-//     image,
-//   } = req.body;
-
-//   try {
-//     const uploadedImage = await cloudinary.uploader.upload(image, {
-//       folder: 'trainers/images'
-//     });
-
-//     const uploadedResume = await cloudinary.uploader.upload(resume, {
-//       folder: 'trainers/images'
-//     });
-
-//     if (!uploadedImage.secure_url || !uploadedResume.secure_url) {
-//       return res.status(400).json({ msg: "Failed to upload image or resume" });
-//     }
-
-//     const newTrainer = new Trainer({
-//       name,
-//       email,
-//       phone,
-//       whatsapp,
-//       cnic,
-//       salary,
-//       specialization,
-//       course,
-//       batch,
-//       section,
-//       password,
-//       image: uploadedImage.secure_url,
-//       resume: uploadedResume.secure_url
-//     });
-
-//     console.log('Uploaded Image URL:', uploadedImage.secure_url);
-//     console.log('Uploaded Resume URL:', uploadedResume.secure_url);
-
-//     const savedTrainer = await newTrainer.save();
-//     res.status(201).json({
-//       msg: "Trainer added successfully",
-//       data: savedTrainer,
-//       error: false,
-//     });
-
-//   } catch (error) {
-//     console.error("Error Details:", error); // Log detailed error
-//     res.status(500).json({
-//       msg: "Failed to add Trainer",
-//       error: error.message, // Send error message for debugging
-//     });
-//   }
-// });
-
-// GET: Fetch Trainers
+// Get All Trainers
+// // GET: Fetch Trainers
 router.get('/', async (req, res) => {
   try {
     const trainers = await Trainer.find()
@@ -170,5 +78,56 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Export Module
+// Get Trainer by ID
+router.get("/:id", async (req, res) => {
+  try {
+    const trainer = await Trainer.findById(req.params.id)
+      .populate("course")
+      .populate("batch")
+      .populate("section");
+    if (!trainer) return res.status(404).json({ message: "Trainer not found" });
+    res.status(200).json(trainer);
+  } catch (error) {
+    console.error("Error fetching trainer:", error);
+    res.status(500).json({ message: "Failed to fetch trainer." });
+  }
+});
+
+// Update Trainer
+router.put("/update/:id", upload.fields([{ name: "image" }, { name: "resume" }]), async (req, res) => {
+  try {
+    const updates = req.body;
+
+    // Handle image and resume updates
+    if (req.files.image) updates.image = req.files.image[0].path;
+    if (req.files.resume) updates.resume = req.files.resume[0].path;
+
+    const updatedTrainer = await Trainer.findByIdAndUpdate(req.params.id, updates, { new: true });
+
+    if (!updatedTrainer) return res.status(404).json({ message: "Trainer not found" });
+    res.status(200).json({ message: "Trainer updated successfully", updatedTrainer });
+  } catch (error) {
+    console.error("Error updating trainer:", error);
+    res.status(500).json({ message: "Failed to update trainer." });
+  }
+});
+
+// Delete Trainer
+router.delete("/delete/:id", async (req, res) => {
+  try {
+    const deletedTrainer = await Trainer.findByIdAndDelete(req.params.id);
+    if (!deletedTrainer) return res.status(404).json({ message: "Trainer not found" });
+    res.status(200).json({ message: "Trainer deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting trainer:", error);
+    res.status(500).json({ message: "Failed to delete trainer." });
+  }
+});
+
 export default router;
+
+
+
+
+
+
