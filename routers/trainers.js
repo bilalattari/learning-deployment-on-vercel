@@ -94,13 +94,21 @@ router.get("/:id", async (req, res) => {
 });
 
 // Update Trainer
-router.put("/update/:id", upload.fields([{ name: "image" }, { name: "resume" }]), async (req, res) => {
+router.put("/:id", upload.fields([{ name: "image" }, { name: "resume" }]), async (req, res) => {
   try {
-    const updates = req.body;
+    const updates = { ...req.body };
 
-    // Handle image and resume updates
-    if (req.files.image) updates.image = req.files.image[0].path;
-    if (req.files.resume) updates.resume = req.files.resume[0].path;
+    // Handle image update
+    if (req.files['image']) {
+      const imageResult = await uploadToCloudinary(req.files['image'][0]);
+      updates.image = imageResult.secure_url;
+    }
+
+    // Handle resume update
+    if (req.files['resume']) {
+      const resumeResult = await uploadToCloudinary(req.files['resume'][0]);
+      updates.resume = resumeResult.secure_url;
+    }
 
     const updatedTrainer = await Trainer.findByIdAndUpdate(req.params.id, updates, { new: true });
 
@@ -113,7 +121,7 @@ router.put("/update/:id", upload.fields([{ name: "image" }, { name: "resume" }])
 });
 
 // Delete Trainer
-router.delete("/delete/:id", async (req, res) => {
+router.delete("/:id", async (req, res) => {
   try {
     const deletedTrainer = await Trainer.findByIdAndDelete(req.params.id);
     if (!deletedTrainer) return res.status(404).json({ message: "Trainer not found" });
