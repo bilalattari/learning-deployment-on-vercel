@@ -1,5 +1,6 @@
 import express from "express";
 import Trainer from "../model/Trainer.js";
+import Student from "../model/Student.js";
 import multer from "multer";
 import cloudinary from 'cloudinary';
 
@@ -27,12 +28,55 @@ const uploadToCloudinary = (file) => {
 };
 
 
+// // Add Trainer (POST)
+// router.post("/", upload.fields([{ name: 'image', maxCount: 1 }, { name: 'resume', maxCount: 1 }]), async (req, res) => {
+//   try {
+//     // Upload image and resume to Cloudinary
+//     const imageResult = await uploadToCloudinary(req.files['image'][0]);
+//     const resumeResult = await uploadToCloudinary(req.files['resume'][0]);
+
+//     // Create a new trainer
+//     const newTrainer = new Trainer({
+//       name: req.body.Name,
+//       email: req.body.Email,
+//       phone: req.body.Phone,
+//       whatsapp: req.body.Whatsapp,
+//       cnic: req.body.Cnic,
+//       salary: req.body.Salary,
+//       address: req.body.address,
+//       specialization: req.body.Specialization,
+//       course: req.body.Course,
+//       batch: req.body.Batch,
+//       section: req.body.Section,
+//       password: req.body.Password,
+//       image: imageResult.secure_url,
+//       resume: resumeResult.secure_url,
+//     });
+
+//     // Save to the database
+//     await newTrainer.save();
+
+//     res.status(200).json({ message: 'Trainer added successfully', trainer: newTrainer });
+//   } catch (error) {
+//     res.status(500).json({ message: 'Failed to upload files or save trainer', error: error.message });
+//   }
+// });
+
 // Add Trainer (POST)
 router.post("/", upload.fields([{ name: 'image', maxCount: 1 }, { name: 'resume', maxCount: 1 }]), async (req, res) => {
   try {
+    console.log('Received form data:', req.body);
+    console.log('Received files:', req.files);
+
     // Upload image and resume to Cloudinary
     const imageResult = await uploadToCloudinary(req.files['image'][0]);
     const resumeResult = await uploadToCloudinary(req.files['resume'][0]);
+
+    // Parse the Batches and Sections JSON strings
+    const batches = JSON.parse(req.body.Batches || '[]');
+    const sections = JSON.parse(req.body.Sections || '[]');
+    console.log('Parsed batches:', batches);
+    console.log('Parsed sections:', sections);
 
     // Create a new trainer
     const newTrainer = new Trainer({
@@ -45,22 +89,40 @@ router.post("/", upload.fields([{ name: 'image', maxCount: 1 }, { name: 'resume'
       address: req.body.address,
       specialization: req.body.Specialization,
       course: req.body.Course,
-      batch: req.body.Batch,
-      section: req.body.Section,
+      batches: batches,
+      sections: sections,
       password: req.body.Password,
       image: imageResult.secure_url,
       resume: resumeResult.secure_url,
     });
+
+    console.log('Trainer object before saving:', newTrainer);
 
     // Save to the database
     await newTrainer.save();
 
     res.status(200).json({ message: 'Trainer added successfully', trainer: newTrainer });
   } catch (error) {
+    console.error('Error in trainer creation:', error);
     res.status(500).json({ message: 'Failed to upload files or save trainer', error: error.message });
   }
 });
 
+// // Get All Trainers
+// // // GET: Fetch Trainers
+// router.get('/', async (req, res) => {
+//   try {
+//     const trainers = await Trainer.find()
+//       .populate('course', 'title') // Populating course title
+//       .populate('batch', 'title')  // Populating batch title
+//       .populate('section', 'title'); // Populating section title
+
+//     res.status(200).json({ data: trainers });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: 'Failed to fetch trainers' });
+//   }
+// });
 
 // Get All Trainers
 // // GET: Fetch Trainers
@@ -68,8 +130,8 @@ router.get('/', async (req, res) => {
   try {
     const trainers = await Trainer.find()
       .populate('course', 'title') // Populating course title
-      .populate('batch', 'title')  // Populating batch title
-      .populate('section', 'title'); // Populating section title
+      .populate('batches', 'title')  // Populating batch title
+      .populate('sections', 'title'); // Populating section title
 
     res.status(200).json({ data: trainers });
   } catch (error) {
@@ -110,6 +172,7 @@ router.put("/:id", upload.fields([{ name: "image" }, { name: "resume" }]), async
       updates.resume = resumeResult.secure_url;
     }
 
+    // Update the trainer in the database
     const updatedTrainer = await Trainer.findByIdAndUpdate(req.params.id, updates, { new: true });
 
     if (!updatedTrainer) return res.status(404).json({ message: "Trainer not found" });
@@ -119,6 +182,7 @@ router.put("/:id", upload.fields([{ name: "image" }, { name: "resume" }]), async
     res.status(500).json({ message: "Failed to update trainer." });
   }
 });
+
 
 // Delete Trainer
 router.delete("/:id", async (req, res) => {
@@ -133,9 +197,3 @@ router.delete("/:id", async (req, res) => {
 });
 
 export default router;
-
-
-
-
-
-
