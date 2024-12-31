@@ -123,4 +123,38 @@ router.get('/', async (req, res) => {
     }
 });
 
+// Update Student Route
+router.put('/:id', upload.single('image'), async (req, res) => {
+    try {
+      const { id } = req.params;
+      const {
+        name, email, fatherName, phoneNo, whatsappNo, cnic, fatherCnic,
+        qualification, campus, trainer, course, batch, section, gender, address, password
+      } = req.body;
+  
+      let updatedData = {
+        name, email, fatherName, phoneNo, whatsappNo, cnic, fatherCnic,
+        qualification, campus, trainer, course, batch, section, gender, address, password
+      };
+  
+      if (req.file) {
+        const imageUpload = await cloudinary.uploader.upload(
+          `data:image/png;base64,${req.file.buffer.toString('base64')}`
+        );
+        updatedData.image = imageUpload.secure_url;
+      }
+  
+      const updatedStudent = await Student.findByIdAndUpdate(id, updatedData, { new: true });
+  
+      if (!updatedStudent) {
+        return res.status(404).json({ error: 'Student not found.' });
+      }
+  
+      res.status(200).json({ message: 'Student updated successfully!', updatedStudent });
+    } catch (error) {
+      console.error('Error updating student:', error);
+      res.status(500).json({ error: 'Failed to update student.' });
+    }
+  });
+    
 export default router;
