@@ -26,7 +26,7 @@ export const getAnnouncements = async (req, res) => {
 // Create Announcement
 export const createAnnouncement = async (req, res) => {
   try {
-    const { title, description, type, course, batch, section, trainer , campus} = req.body;
+    const { title, description, course, batch, section, trainer , campus} = req.body;
 
     // Upload image to Cloudinary
     const result = await cloudinary.uploader.upload(req.file.path);
@@ -35,7 +35,6 @@ export const createAnnouncement = async (req, res) => {
       title,
       description,
       image: result.secure_url,
-      type,
       campus,
       course,
       batch,
