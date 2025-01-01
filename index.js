@@ -8,6 +8,7 @@ import sectionsRoutes from "./routers/sections.js";
 import studentRoutes from './routers/student.js';
 import assignmentsRoutes from './routers/assignments.js';
 import announcementRoutes from './routers/announcements.js'
+import personalAnnouncementRoutes from './routers/personalAnnouncement.js'
 import dotenv from "dotenv";
 import { connectDB } from "./lib/DB/connectDB.js";
 import cors from "cors";
@@ -56,6 +57,7 @@ app.use("/student", studentRoutes);
 
 app.use('/assignment', assignmentsRoutes);
 app.use('/announcements', announcementRoutes);
+app.use('/personalAnnouncements', personalAnnouncementRoutes);
 
 // Home Route
 app.get("/", (req, res) => {
