@@ -7,6 +7,7 @@ import batchesRoutes from "./routers/batches.js";
 import sectionsRoutes from "./routers/sections.js";
 import studentRoutes from './routers/student.js';
 import assignmentsRoutes from './routers/assignments.js';
+import announcementRoutes from './routers/announcements.js'
 import dotenv from "dotenv";
 import { connectDB } from "./lib/DB/connectDB.js";
 import cors from "cors";
@@ -54,11 +55,12 @@ app.use("/section", sectionsRoutes);
 app.use("/student", studentRoutes);
 
 app.use('/assignment', assignmentsRoutes);
+app.use('/announcements', announcementRoutes);
 
 // Home Route
 app.get("/", (req, res) => {
 	const obj = {
-		name: "Asheel Ahmed Siddiqui",
+		name: "Manegement System For SMIT",
 		getReqTime: `Date: ${new Date().toDateString()}, Time: ${new Date().toLocaleTimeString()}`,
 	};
 	res.send(obj);
