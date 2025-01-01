@@ -156,5 +156,21 @@ router.put('/:id', upload.single('image'), async (req, res) => {
       res.status(500).json({ error: 'Failed to update student.' });
     }
   });
+
+  // DELETE route for deleting a student
+router.delete('/:id', async (req, res) => {
+    try {
+      const studentId = req.params.id;
+      const student = await Student.findByIdAndDelete(studentId);
+  
+      if (!student) {
+        return res.status(404).json({ message: 'Student not found' });
+      }
+  
+      res.status(200).json({ message: 'Student deleted successfully' });
+    } catch (error) {
+      res.status(500).json({ message: 'Server error', error });
+    }
+  });
     
 export default router;

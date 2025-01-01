@@ -104,19 +104,18 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// // Update Trainer
 // router.put("/:id", upload.fields([{ name: "image" }, { name: "resume" }]), async (req, res) => {
 //   try {
 //     const updates = { ...req.body };
 
 //     // Handle image update
-//     if (req.files['image']) {
+//     if (req.files && req.files['image']) {
 //       const imageResult = await uploadToCloudinary(req.files['image'][0]);
 //       updates.image = imageResult.secure_url;
 //     }
 
 //     // Handle resume update
-//     if (req.files['resume']) {
+//     if (req.files && req.files['resume']) {
 //       const resumeResult = await uploadToCloudinary(req.files['resume'][0]);
 //       updates.resume = resumeResult.secure_url;
 //     }
@@ -128,11 +127,14 @@ router.get("/:id", async (req, res) => {
 //     res.status(200).json({ message: "Trainer updated successfully", updatedTrainer });
 //   } catch (error) {
 //     console.error("Error updating trainer:", error);
-//     res.status(500).json({ message: "Failed to update trainer." });
+//     res.status(500).json({ message: "Failed to update trainer.", error: error.message });
 //   }
 // });
 
-router.put("/:id", upload.fields([{ name: "image" }, { name: "resume" }]), async (req, res) => {
+
+// Delete Trainer
+
+router.put("/:id", upload.fields([{ name: 'image', maxCount: 1 }, { name: 'resume', maxCount: 1 }]), async (req, res) => {
   try {
     const updates = { ...req.body };
 
@@ -148,6 +150,13 @@ router.put("/:id", upload.fields([{ name: "image" }, { name: "resume" }]), async
       updates.resume = resumeResult.secure_url;
     }
 
+    // Parse arrays
+    ['batches', 'sections'].forEach(field => {
+      if (updates[field]) {
+        updates[field] = Array.isArray(updates[field]) ? updates[field] : [updates[field]];
+      }
+    });
+
     // Update the trainer in the database
     const updatedTrainer = await Trainer.findByIdAndUpdate(req.params.id, updates, { new: true });
 
@@ -159,8 +168,6 @@ router.put("/:id", upload.fields([{ name: "image" }, { name: "resume" }]), async
   }
 });
 
-
-// Delete Trainer
 router.delete("/:id", async (req, res) => {
   try {
     const deletedTrainer = await Trainer.findByIdAndDelete(req.params.id);
