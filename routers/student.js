@@ -4,6 +4,7 @@ import multer from 'multer';
 import QRCode from 'qrcode';
 import nodemailer from 'nodemailer'; // Import Nodemailer
 import Student from '../model/Student.js';
+import User from '../model/User.js';
 
 const router = express.Router();
 
@@ -173,4 +174,36 @@ router.delete('/:id', async (req, res) => {
     }
   });
     
+  router.get('/courses/:userId', async (req, res) => {
+    try {
+      const user = await User.findById(req.params.userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+  
+      if (user.role !== 'student') {
+        return res.status(403).json({ message: 'User is not a student' });
+      }
+  
+      const student = await Student.findOne({ email: user.email })
+        .populate('course')
+        .populate('batch')
+        .populate('section');
+  
+      if (!student) {
+        return res.status(404).json({ message: 'Student data not found' });
+      }
+  
+      res.status(200).json({
+        course: student.course,
+        batch: student.batch,
+        section: student.section
+      });
+    } catch (error) {
+      console.error('Error fetching student courses:', error);
+      res.status(500).json({ error: 'Failed to fetch student courses.' });
+    }
+  });
+  
 export default router;
