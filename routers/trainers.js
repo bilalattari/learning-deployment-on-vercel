@@ -163,47 +163,112 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
-// Update the route to fetch courses for a specific trainer
+// // Update the route to fetch courses for a specific trainer
+// router.get('/courses/:userId', async (req, res) => {
+//   try {
+//     const { userId } = req.params;
+
+//     if (!userId) {
+//       return res.status(400).json({ message: 'User ID is required' });
+//     }
+
+//     const user = await User.findById(userId);
+
+//     if (!user) {
+//       return res.status(404).json({ message: 'User not found' });
+//     }
+
+//     if (user.role !== 'teacher') {
+//       return res.status(403).json({ message: 'User is not a teacher' });
+//     }
+
+//     const trainer = await Trainer.findOne({ email: user.email })
+//       .populate('courses')
+//       .populate('batches')
+//       .populate('sections');
+
+//     console.log('trainer Data', trainer)
+
+//     if (!trainer) {
+//       return res.status(404).json({ message: 'Trainer data not found' });
+//     }
+
+//     // console.log('Trainer Courses:', trainer.courses); // Debugging line
+
+//     const courses = trainer.courses.map(course => ({
+//       trainerName: trainer.name,
+//       courseName: course.title,
+//       batches: trainer.batches.filter(batch => batch.course.toString() === course._id.toString()),
+//       sections: trainer.sections.filter(section => section.course.toString() === course._id.toString())
+//     }));
+
+//     // res.status(200).json({ courses });
+//     res.status(200).json({ courses });
+
+//   } catch (error) {
+//     console.error('Error fetching trainer courses:', error);
+//     res.status(500).json({ error: 'Failed to fetch trainer courses.' });
+//   }
+// });
+
 router.get('/courses/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
 
+    // Validate userId
     if (!userId) {
       return res.status(400).json({ message: 'User ID is required' });
     }
 
+    // Find User by ID
     const user = await User.findById(userId);
-
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
 
+    // Check role
     if (user.role !== 'teacher') {
       return res.status(403).json({ message: 'User is not a teacher' });
     }
 
+    // Fetch Trainer Data
     const trainer = await Trainer.findOne({ email: user.email })
-      .populate('courses')
-      .populate('batches')
-      .populate('sections');
+      .populate('courses')     // Populate courses
+      .populate('batches')     // Populate batches
+      .populate('sections');   // Populate sections
 
     if (!trainer) {
       return res.status(404).json({ message: 'Trainer data not found' });
     }
 
-    console.log('Trainer Courses:', trainer.courses); // Debugging line
+    // Prepare Final Response
+    const response = {
+      trainerID : trainer._id,
+      trainerName: trainer.name,
+      email: trainer.email,
+      phone: trainer.phone,
+      whatsapp: trainer.whatsapp,
+      specialization: trainer.specialization,
+      address: trainer.address,
+      salary: trainer.salary,
+      image: trainer.image,
+      resume: trainer.resume,
+      courses: trainer.courses.map(course => ({
+        courseName: course.title,
+        batches: trainer.batches.filter(batch => batch.course.toString() === course._id.toString()),
+        sections: trainer.sections.filter(section => section.course.toString() === course._id.toString())
+      }))
+    };
 
-    const courses = trainer.courses.map(course => ({
-      courseName: course.title,
-      batches: trainer.batches.filter(batch => batch.course.toString() === course._id.toString()),
-      sections: trainer.sections.filter(section => section.course.toString() === course._id.toString())
-    }));
 
-    res.status(200).json({ courses });
+    // Send Response
+    res.status(200).json(response);
+
   } catch (error) {
-    console.error('Error fetching trainer courses:', error);
-    res.status(500).json({ error: 'Failed to fetch trainer courses.' });
+    console.error('Error fetching trainer data:', error);
+    res.status(500).json({ error: 'Failed to fetch trainer data.' });
   }
 });
+
 
 export default router;

@@ -10,7 +10,7 @@ const assignmentSchema = new mongoose.Schema({
     batch: { type: mongoose.Schema.Types.ObjectId, ref: 'Batch', required: true },
     section: { type: mongoose.Schema.Types.ObjectId, ref: 'Section', required: true },
     file: String,
-    link : String ,
+    link : String,
     grade: String,
 }, { timestamps: true} );
 
