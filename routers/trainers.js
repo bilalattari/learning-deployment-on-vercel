@@ -163,54 +163,6 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
-// // Update the route to fetch courses for a specific trainer
-// router.get('/courses/:userId', async (req, res) => {
-//   try {
-//     const { userId } = req.params;
-
-//     if (!userId) {
-//       return res.status(400).json({ message: 'User ID is required' });
-//     }
-
-//     const user = await User.findById(userId);
-
-//     if (!user) {
-//       return res.status(404).json({ message: 'User not found' });
-//     }
-
-//     if (user.role !== 'teacher') {
-//       return res.status(403).json({ message: 'User is not a teacher' });
-//     }
-
-//     const trainer = await Trainer.findOne({ email: user.email })
-//       .populate('courses')
-//       .populate('batches')
-//       .populate('sections');
-
-//     console.log('trainer Data', trainer)
-
-//     if (!trainer) {
-//       return res.status(404).json({ message: 'Trainer data not found' });
-//     }
-
-//     // console.log('Trainer Courses:', trainer.courses); // Debugging line
-
-//     const courses = trainer.courses.map(course => ({
-//       trainerName: trainer.name,
-//       courseName: course.title,
-//       batches: trainer.batches.filter(batch => batch.course.toString() === course._id.toString()),
-//       sections: trainer.sections.filter(section => section.course.toString() === course._id.toString())
-//     }));
-
-//     // res.status(200).json({ courses });
-//     res.status(200).json({ courses });
-
-//   } catch (error) {
-//     console.error('Error fetching trainer courses:', error);
-//     res.status(500).json({ error: 'Failed to fetch trainer courses.' });
-//   }
-// });
-
 router.get('/courses/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
@@ -243,7 +195,7 @@ router.get('/courses/:userId', async (req, res) => {
 
     // Prepare Final Response
     const response = {
-      trainerID : trainer._id,
+      trainerID: trainer._id,
       trainerName: trainer.name,
       email: trainer.email,
       phone: trainer.phone,
@@ -269,6 +221,5 @@ router.get('/courses/:userId', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch trainer data.' });
   }
 });
-
 
 export default router;
