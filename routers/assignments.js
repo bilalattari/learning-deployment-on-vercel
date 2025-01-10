@@ -106,6 +106,7 @@ import Assignment from '../model/Assignment.js';
 import Course from '../model/Course.js';
 import Section from '../model/Section.js';
 import Trainer from '../model/Trainer.js';
+import fs from "fs";
 
 const router = express.Router();
 
@@ -165,6 +166,8 @@ router.post('/upload', upload, async (req, res) => {
     if (!sectionDoc) {
       return res.status(400).json({ message: 'Section not found' });
     }
+
+    fs.unlinkSync(req.file.path);
 
     // Create and save assignment
     const newAssignment = new Assignment({

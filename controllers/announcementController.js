@@ -1,5 +1,6 @@
 import cloudinary from 'cloudinary';
 import Announcement from '../model/Announcements.js';
+import fs from "fs";
 
 // Cloudinary Configuration
 cloudinary.config({
@@ -30,6 +31,8 @@ export const createAnnouncement = async (req, res) => {
 
     // Upload image to Cloudinary
     const result = await cloudinary.uploader.upload(req.file.path);
+
+    fs.unlinkSync(req.file.path);
 
     const announcement = new Announcement({
       title,

@@ -5,14 +5,15 @@ import QRCode from 'qrcode';
 import nodemailer from 'nodemailer'; // Import Nodemailer
 import Student from '../model/Student.js';
 import User from '../model/User.js';
+import fs from "fs";
 
 const router = express.Router();
 
 // Cloudinary Configuration
 cloudinary.config({
-    cloud_name: 'duvdqnoht',
-    api_key: '538347923483567',
-    api_secret: '7TQyo_k4m7_boBRTT8viSXuLix0'
+  cloud_name: 'duvdqnoht',
+  api_key: '538347923483567',
+  api_secret: '7TQyo_k4m7_boBRTT8viSXuLix0'
 });
 
 // Multer Configuration
@@ -22,70 +23,73 @@ const upload = multer({ storage: storage });
 // Nodemailer Configuration
 // Configure Nodemailer
 const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: 'shoaibrazamemon170@gmail.com', // Replace with your email
-        pass: 'dbze dxhh lgms kzmj' // Replace with your password or app password
-    }
+  service: 'gmail',
+  auth: {
+    user: 'shoaibrazamemon170@gmail.com', // Replace with your email
+    pass: 'dbze dxhh lgms kzmj' // Replace with your password or app password
+  }
 });
 
 // Generate Roll Number
 const generateRollNumber = async () => {
-    const count = await Student.countDocuments() + 1;
-    return count.toString().padStart(6, '0'); // Example: 000001
+  const count = await Student.countDocuments() + 1;
+  return count.toString().padStart(6, '0'); // Example: 000001
 };
 
 // Add Student Route
 router.post('/', upload.single('image'), async (req, res) => {
-    try {
-        const {
-            name, email, fatherName, phoneNo, whatsappNo, cnic, fatherCnic,
-            qualification, campus, trainer, course, batch, section, gender, address , password
-        } = req.body;
+  try {
+    const {
+      name, email, fatherName, phoneNo, whatsappNo, cnic, fatherCnic,
+      qualification, campus, trainer, course, batch, section, gender, address, password
+    } = req.body;
 
-        // Generate Roll Number
-        const rollNumber = await generateRollNumber();
+    // Generate Roll Number
+    const rollNumber = await generateRollNumber();
 
-        // Upload Image to Cloudinary
-        const imageUpload = await cloudinary.uploader.upload(
-            `data:image/png;base64,${req.file.buffer.toString('base64')}`
-        );
+    // Upload Image to Cloudinary
+    const imageUpload = await cloudinary.uploader.upload(
+      `data:image/png;base64,${req.file.buffer.toString('base64')}`
+    );
 
-        // Generate QR Code
-        const qrData = `${rollNumber} - ${name}`;
-        const qrCode = await QRCode.toDataURL(qrData);
+    // Generate QR Code
+    const qrData = `${rollNumber} - ${name}`;
+    const qrCode = await QRCode.toDataURL(qrData);
 
-        // Create Student
-        const student = new Student({
-            name,
-            email,
-            fatherName,
-            phoneNo,
-            whatsappNo,
-            cnic,
-            fatherCnic,
-            qualification,
-            campus,
-            trainer,
-            course,
-            batch,
-            section,
-            gender,
-            address,
-            password,
-            rollNumber,
-            image: imageUpload.secure_url,
-            qrCode
-        });
+    // Delete local file
+    fs.unlinkSync(req.file.path);
 
-        await student.save();
+    // Create Student
+    const student = new Student({
+      name,
+      email,
+      fatherName,
+      phoneNo,
+      whatsappNo,
+      cnic,
+      fatherCnic,
+      qualification,
+      campus,
+      trainer,
+      course,
+      batch,
+      section,
+      gender,
+      address,
+      password,
+      rollNumber,
+      image: imageUpload.secure_url,
+      qrCode
+    });
 
-        // Send Email Notification
-        const mailOptions = {
-            from: process.env.EMAIL_USER, // Sender email
-            to: email, // Student's email
-            subject: 'Welcome to Our Training Program!',
-            html: `
+    await student.save();
+
+    // Send Email Notification
+    const mailOptions = {
+      from: process.env.EMAIL_USER, // Sender email
+      to: email, // Student's email
+      subject: 'Welcome to Our Training Program!',
+      html: `
                 <h2>Dear ${name},</h2>
                 <p>Congratulations! You have been successfully registered for the training program.</p>
                 <p><strong>Roll Number:</strong> ${rollNumber}</p>
@@ -96,114 +100,114 @@ router.post('/', upload.single('image'), async (req, res) => {
                 <p>SMIT Regards,</p>
                 <p><strong>Your Training Team</strong></p>
             `
-        };
+    };
 
-        transporter.sendMail(mailOptions, (err, info) => {
-            if (err) {
-                console.error('Error sending email:', err);
-                return res.status(500).json({ error: 'Failed to send email.' });
-            }
-            console.log('Email sent:', info.response);
-        });
+    transporter.sendMail(mailOptions, (err, info) => {
+      if (err) {
+        console.error('Error sending email:', err);
+        return res.status(500).json({ error: 'Failed to send email.' });
+      }
+      console.log('Email sent:', info.response);
+    });
 
-        res.status(201).json({ message: 'Student added successfully!', student });
-    } catch (error) {
-        console.error('Error adding student:', error);
-        res.status(500).json({ error: 'Failed to add student.' });
-    }
+    res.status(201).json({ message: 'Student added successfully!', student });
+  } catch (error) {
+    console.error('Error adding student:', error);
+    res.status(500).json({ error: 'Failed to add student.' });
+  }
 });
 
 // Get All Students
 router.get('/', async (req, res) => {
-    try {
-        const students = await Student.find().populate('campus trainer course batch section');
-        res.status(200).json(students);
-    } catch (error) {
-        console.error('Error fetching students:', error);
-        res.status(500).json({ error: 'Failed to fetch students.' });
-    }
+  try {
+    const students = await Student.find().populate('campus trainer course batch section');
+    res.status(200).json(students);
+  } catch (error) {
+    console.error('Error fetching students:', error);
+    res.status(500).json({ error: 'Failed to fetch students.' });
+  }
 });
 
 // Update Student Route
 router.put('/:id', upload.single('image'), async (req, res) => {
-    try {
-      const { id } = req.params;
-      const {
-        name, email, fatherName, phoneNo, whatsappNo, cnic, fatherCnic,
-        qualification, campus, trainer, course, batch, section, gender, address, password
-      } = req.body;
-  
-      let updatedData = {
-        name, email, fatherName, phoneNo, whatsappNo, cnic, fatherCnic,
-        qualification, campus, trainer, course, batch, section, gender, address, password
-      };
-  
-      if (req.file) {
-        const imageUpload = await cloudinary.uploader.upload(
-          `data:image/png;base64,${req.file.buffer.toString('base64')}`
-        );
-        updatedData.image = imageUpload.secure_url;
-      }
-  
-      const updatedStudent = await Student.findByIdAndUpdate(id, updatedData, { new: true });
-  
-      if (!updatedStudent) {
-        return res.status(404).json({ error: 'Student not found.' });
-      }
-  
-      res.status(200).json({ message: 'Student updated successfully!', updatedStudent });
-    } catch (error) {
-      console.error('Error updating student:', error);
-      res.status(500).json({ error: 'Failed to update student.' });
-    }
-  });
+  try {
+    const { id } = req.params;
+    const {
+      name, email, fatherName, phoneNo, whatsappNo, cnic, fatherCnic,
+      qualification, campus, trainer, course, batch, section, gender, address, password
+    } = req.body;
 
-  // DELETE route for deleting a student
+    let updatedData = {
+      name, email, fatherName, phoneNo, whatsappNo, cnic, fatherCnic,
+      qualification, campus, trainer, course, batch, section, gender, address, password
+    };
+
+    if (req.file) {
+      const imageUpload = await cloudinary.uploader.upload(
+        `data:image/png;base64,${req.file.buffer.toString('base64')}`
+      );
+      updatedData.image = imageUpload.secure_url;
+    }
+
+    const updatedStudent = await Student.findByIdAndUpdate(id, updatedData, { new: true });
+
+    if (!updatedStudent) {
+      return res.status(404).json({ error: 'Student not found.' });
+    }
+
+    res.status(200).json({ message: 'Student updated successfully!', updatedStudent });
+  } catch (error) {
+    console.error('Error updating student:', error);
+    res.status(500).json({ error: 'Failed to update student.' });
+  }
+});
+
+// DELETE route for deleting a student
 router.delete('/:id', async (req, res) => {
-    try {
-      const studentId = req.params.id;
-      const student = await Student.findByIdAndDelete(studentId);
-  
-      if (!student) {
-        return res.status(404).json({ message: 'Student not found' });
-      }
-  
-      res.status(200).json({ message: 'Student deleted successfully' });
-    } catch (error) {
-      res.status(500).json({ message: 'Server error', error });
+  try {
+    const studentId = req.params.id;
+    const student = await Student.findByIdAndDelete(studentId);
+
+    if (!student) {
+      return res.status(404).json({ message: 'Student not found' });
     }
-  });
-    
-  router.get('/courses/:userId', async (req, res) => {
-    try {
-      const user = await User.findById(req.params.userId);
-      
-      if (!user) {
-        return res.status(404).json({ message: 'User not found' });
-      }
-  
-      if (user.role !== 'student') {
-        return res.status(403).json({ message: 'User is not a student' });
-      }
-  
-      const student = await Student.findOne({ email: user.email })
-        .populate('course')
-        .populate('batch')
-        .populate('section');
-  
-      if (!student) {
-        return res.status(404).json({ message: 'Student data not found' });
-      }
-  
-      res.status(200).json({
-        course: student.course,
-        batch: student.batch,
-        section: student.section
-      });
-    } catch (error) {
-      console.error('Error fetching student courses:', error);
-      res.status(500).json({ error: 'Failed to fetch student courses.' });
+
+    res.status(200).json({ message: 'Student deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error });
+  }
+});
+
+router.get('/courses/:userId', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
     }
-  });
-  
+
+    if (user.role !== 'student') {
+      return res.status(403).json({ message: 'User is not a student' });
+    }
+
+    const student = await Student.findOne({ email: user.email })
+      .populate('course')
+      .populate('batch')
+      .populate('section');
+
+    if (!student) {
+      return res.status(404).json({ message: 'Student data not found' });
+    }
+
+    res.status(200).json({
+      course: student.course,
+      batch: student.batch,
+      section: student.section
+    });
+  } catch (error) {
+    console.error('Error fetching student courses:', error);
+    res.status(500).json({ error: 'Failed to fetch student courses.' });
+  }
+});
+
 export default router;

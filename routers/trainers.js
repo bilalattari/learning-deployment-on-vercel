@@ -1,9 +1,9 @@
 import express from "express";
 import Trainer from "../model/Trainer.js";
-import Student from "../model/Student.js";
 import multer from "multer";
 import cloudinary from 'cloudinary';
 import User from "../model/User.js";
+import fs from "fs";
 
 const router = express.Router();
 
@@ -45,6 +45,9 @@ router.post("/", upload.fields([{ name: 'image', maxCount: 1 }, { name: 'resume'
     console.log('Parsed courses:', courses);
     console.log('Parsed batches:', batches);
     console.log('Parsed sections:', sections);
+
+    // Delete local file
+    fs.unlinkSync(req.file.path);
 
     // Create a new trainer
     const newTrainer = new Trainer({
