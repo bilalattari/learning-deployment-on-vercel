@@ -6,6 +6,7 @@ node_modules/
 
 # Environment files
 .env
+*.local
 
 # Operating system files
 .DS_Store
@@ -17,3 +18,5 @@ package-lock.json
 .vscode/
 .idea/
 .vercel
+
+uploads
