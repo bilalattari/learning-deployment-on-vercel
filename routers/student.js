@@ -57,7 +57,7 @@ router.post('/', upload.single('image'), async (req, res) => {
     const qrCode = await QRCode.toDataURL(qrData);
 
     // Delete local file
-    fs.unlinkSync(req.file.path);
+    // fs.unlinkSync(req.file.path);
 
     // Create Student
     const student = new Student({

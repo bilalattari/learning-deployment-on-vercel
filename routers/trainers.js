@@ -3,6 +3,10 @@ import Trainer from "../model/Trainer.js";
 import multer from "multer";
 import cloudinary from 'cloudinary';
 import User from "../model/User.js";
+import Course from "../model/Course.js";
+import Batch from "../model/Batch.js";
+import Section from "../model/Section.js";
+
 import fs from "fs";
 
 const router = express.Router();

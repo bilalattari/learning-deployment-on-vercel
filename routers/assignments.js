@@ -1,103 +1,3 @@
-// import express from 'express';
-// import mongoose from 'mongoose';
-// import cloudinary from 'cloudinary';
-// import multer from 'multer';
-// import Assignment from '../model/Assignment.js';
-
-// const router = express.Router();
-
-// // Cloudinary Configuration
-// cloudinary.config({
-//   cloud_name: 'duvdqnoht',
-//   api_key: '538347923483567',
-//   api_secret: '7TQyo_k4m7_boBRTT8viSXuLix0',
-// });
-
-// // Multer Configuration
-// const storage = multer.memoryStorage();
-// const upload = multer({
-//   storage: storage,
-//   limits: { fileSize: 10 * 1024 * 1024 }, // limit file size to 10MB
-// }).single('file'); // 'file' is the name of the input field for file upload
-
-// // Function to upload file to Cloudinary
-// const uploadToCloudinary = (fileBuffer) => {
-//   return new Promise((resolve, reject) => {
-//     const stream = cloudinary.v2.uploader.upload_stream(
-//       { resource_type: 'auto' },
-//       (error, result) => {
-//         if (error) reject(error);
-//         else resolve(result.secure_url);
-//       }
-//     );
-//     stream.end(fileBuffer); // Send file buffer to Cloudinary
-//   });
-// };
-
-// // Upload Assignment Route
-// router.post('/upload', upload, async (req, res) => {
-
-//   console.log(req.body);
-//   try {
-//     const { name, deadline, course, batch, section, trainer, campus } = req.body;
-
-//     let fileUrl = '';
-//     if (req.file) {
-//       // Upload file to Cloudinary
-//       fileUrl = await uploadToCloudinary(req.file.buffer);
-//     }
-
-//     // Create and save assignment
-//     const newAssignment = new Assignment({
-//       name,
-//       deadline,
-//       file: fileUrl,
-//       course,
-//       batch,
-//       section,
-//       trainer,
-//       campus,
-//     });
-
-//     await newAssignment.save();
-//     return res.status(201).json({ message: 'Assignment uploaded successfully' });
-//   } catch (error) {
-//     console.error(error);
-//     return res.status(500).json({ message: 'Error processing request', error });
-//   }
-// });
-
-// router.get('/', async (req, res) => {
-//   try {
-//     // Database se saare assignments fetch karo
-//     // Fetch assignments with populated fields
-//     const assignments = await Assignment.find()
-//       .populate({ path: 'campus', select: 'title' })
-//       .populate({ path: 'trainer', select: 'name' })
-//       .populate({ path: 'course', select: 'title' })
-//       .populate({ path: 'batch', select: 'title' })
-//       .populate({ path: 'section', select: 'title' });
-//     // Response bhejo
-//     return res.status(200).json(assignments);
-//   } catch (error) {
-//     console.error(error);
-//     return res.status(500).json({ message: 'Error fetching assignments', error });
-//   }
-// });
-
-
-// export default router;
-
-
-
-
-
-
-
-
-
-
-
 import express from 'express';
 import mongoose from 'mongoose';
 import cloudinary from 'cloudinary';
@@ -107,6 +7,8 @@ import Course from '../model/Course.js';
 import Section from '../model/Section.js';
 import Trainer from '../model/Trainer.js';
 import fs from "fs";
+import Student from '../model/Student.js';
+import User from '../model/User.js';
 
 const router = express.Router();
 
@@ -195,25 +97,6 @@ router.post('/upload', upload, async (req, res) => {
   }
 });
 
-// router.get('/', async (req, res) => {
-//   try {
-//     const assignments = await Assignment.find()
-//       .populate('campus', 'title')
-//       .populate('trainer', 'name')
-//       .populate('course', 'title')
-//       .populate('batch', 'title')
-//       .populate('section', 'title')
-//       .sort({ createdAt: -1 }); // Sort by creation date, newest first
-
-//     return res.status(200).json(assignments);
-//   } catch (error) {
-//     console.error('Error fetching assignments:', error);
-//     return res.status(500).json({ message: 'Error fetching assignments', error: error.message });
-//   }
-// });
-
-// In your assignments.js router file
-
 router.get('/', async (req, res) => {
   try {
     const { trainer } = req.query;
@@ -237,5 +120,89 @@ router.get('/', async (req, res) => {
     return res.status(500).json({ message: 'Error fetching assignments', error: error.message });
   }
 });
+
+// Middleware to verify token and check if the user is a student
+const verifyStudentToken = (req, res, next) => {
+  const token = req.cookies.token;
+  if (!token) return res.status(401).json({ message: 'Unauthorized' });
+
+  try {
+    const decoded = jwt.verify(token, 'secretkey');
+    if (decoded.role !== 'student') {
+      return res.status(403).json({ message: 'Access denied. Students only.' });
+    }
+    req.user = decoded;
+    next();
+  } catch (error) {
+    res.status(400).json({ message: 'Invalid token' });
+  }
+};
+
+// // Add this new route at the end of the file
+// router.get('/assignments/:userId', async (req, res) => {
+//   try {
+//     const user = await User.findById(req.params.userId);
+
+//     if (!user) {
+//       return res.status(404).json({ message: 'User not found' });
+//     }
+
+//     if (user.role !== 'student') {
+//       return res.status(403).json({ message: 'User is not a student' });
+//     }
+
+//     const student = await Student.findOne({ email: user.email });
+
+//     if (!student) {
+//       return res.status(404).json({ message: 'Student data not found' });
+//     }
+
+//     const assignments = await Assignment.find({ 
+//       section: student.section,
+//       batch: student.batch,
+//       course: student.course
+//     }).populate('course', 'title')
+//       .populate('batch', 'title')
+//       .populate('section', 'title');
+
+//     res.status(200).json(assignments);
+//   } catch (error) {
+//     console.error('Error fetching student assignments:', error);
+//     res.status(500).json({ error: 'Failed to fetch student assignments.' });
+//   }
+// });
+
+
+router.get('/assignments/:userId', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (user.role !== 'student') {
+      return res.status(403).json({ message: 'User is not a student' });
+    }
+
+    const student = await Student.findOne({ email: user.email });
+
+    if (!student) {
+      return res.status(404).json({ message: 'Student data not found' });
+    }
+
+    const assignments = await Assignment.find({ section: student.section })
+      .populate('course', 'title')
+      .populate('batch', 'title')
+      .populate('section', 'title');
+
+    res.status(200).json(assignments);
+  } catch (error) {
+    console.error('Error fetching student assignments:', error);
+    res.status(500).json({ error: 'Failed to fetch student assignments.' });
+  }
+});
+
+
 
 export default router;
