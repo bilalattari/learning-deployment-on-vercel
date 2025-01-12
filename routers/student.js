@@ -56,9 +56,6 @@ router.post('/', upload.single('image'), async (req, res) => {
     const qrData = `${rollNumber} - ${name}`;
     const qrCode = await QRCode.toDataURL(qrData);
 
-    // Delete local file
-    // fs.unlinkSync(req.file.path);
-
     // Create Student
     const student = new Student({
       name,
@@ -199,7 +196,30 @@ router.get('/courses/:userId', async (req, res) => {
       return res.status(404).json({ message: 'Student data not found' });
     }
 
+     // Prepare Final Response
+     const studentData = {
+      studentID: student._id,
+      studentName: student.name,
+      email: student.email,
+      phone: student.phoneNo,
+      fatherName: student.fatherName,
+      whatsapp: student.whatsappNo,
+      cnic: student.cnic,
+      fatherCnic: student.fatherCnic,
+      address: student.address,
+      image: student.image,
+      course: student.course,
+      batch: student.batch,
+      section: student.section,
+      campus: student.campus,
+      trainer: student.trainer,
+      gender: student.gender,
+    };
+
+    // console.log('Student Response', studentData);
+    
     res.status(200).json({
+      student: studentData,
       course: student.course,
       batch: student.batch,
       section: student.section

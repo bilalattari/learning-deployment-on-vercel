@@ -51,7 +51,7 @@ router.post("/", upload.fields([{ name: 'image', maxCount: 1 }, { name: 'resume'
     console.log('Parsed sections:', sections);
 
     // Delete local file
-    fs.unlinkSync(req.file.path);
+    // fs.unlinkSync(req.file.path);
 
     // Create a new trainer
     const newTrainer = new Trainer({

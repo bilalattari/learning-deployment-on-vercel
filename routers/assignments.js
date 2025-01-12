@@ -69,8 +69,6 @@ router.post('/upload', upload, async (req, res) => {
       return res.status(400).json({ message: 'Section not found' });
     }
 
-    fs.unlinkSync(req.file.path);
-
     // Create and save assignment
     const newAssignment = new Assignment({
       name,
@@ -138,42 +136,7 @@ const verifyStudentToken = (req, res, next) => {
   }
 };
 
-// // Add this new route at the end of the file
-// router.get('/assignments/:userId', async (req, res) => {
-//   try {
-//     const user = await User.findById(req.params.userId);
-
-//     if (!user) {
-//       return res.status(404).json({ message: 'User not found' });
-//     }
-
-//     if (user.role !== 'student') {
-//       return res.status(403).json({ message: 'User is not a student' });
-//     }
-
-//     const student = await Student.findOne({ email: user.email });
-
-//     if (!student) {
-//       return res.status(404).json({ message: 'Student data not found' });
-//     }
-
-//     const assignments = await Assignment.find({ 
-//       section: student.section,
-//       batch: student.batch,
-//       course: student.course
-//     }).populate('course', 'title')
-//       .populate('batch', 'title')
-//       .populate('section', 'title');
-
-//     res.status(200).json(assignments);
-//   } catch (error) {
-//     console.error('Error fetching student assignments:', error);
-//     res.status(500).json({ error: 'Failed to fetch student assignments.' });
-//   }
-// });
-
-
-router.get('/assignments/:userId', async (req, res) => {
+router.get('/studentAssignments/:userId', async (req, res) => {
   try {
     const user = await User.findById(req.params.userId);
 
@@ -202,7 +165,5 @@ router.get('/assignments/:userId', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch student assignments.' });
   }
 });
-
-
 
 export default router;

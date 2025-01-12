@@ -7,6 +7,7 @@ import batchesRoutes from "./routers/batches.js";
 import sectionsRoutes from "./routers/sections.js";
 import studentRoutes from './routers/student.js';
 import assignmentsRoutes from './routers/assignments.js';
+import assignmentsSubmissionRoutes from './routers/assignmentSubmission.js';
 import announcementRoutes from './routers/announcements.js'
 import personalAnnouncementRoutes from './routers/personalAnnouncement.js'
 import examRoutes from './routers/examRoutes.js'
@@ -58,6 +59,7 @@ app.use("/section", sectionsRoutes);
 app.use("/student", studentRoutes);
 
 app.use('/assignment', assignmentsRoutes);
+app.use('/assignmentSubmission', assignmentsSubmissionRoutes);
 app.use('/announcements', announcementRoutes);
 app.use('/personalAnnouncements', personalAnnouncementRoutes);
 app.use('/exam', examRoutes);
