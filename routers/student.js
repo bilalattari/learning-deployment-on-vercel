@@ -190,7 +190,8 @@ router.get('/courses/:userId', async (req, res) => {
     const student = await Student.findOne({ email: user.email })
       .populate('course')
       .populate('batch')
-      .populate('section');
+      .populate('section')
+      .populate('campus');
 
     if (!student) {
       return res.status(404).json({ message: 'Student data not found' });
@@ -222,7 +223,8 @@ router.get('/courses/:userId', async (req, res) => {
       student: studentData,
       course: student.course,
       batch: student.batch,
-      section: student.section
+      section: student.section,
+      campus: student.campus,
     });
   } catch (error) {
     console.error('Error fetching student courses:', error);
