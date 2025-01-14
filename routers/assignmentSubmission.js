@@ -175,5 +175,71 @@ router.delete('/delete/:submissionId', async (req, res) => {
     }
 });
 
+// Add this new route to your existing router
+router.get('/submitted-assignments', async (req, res) => {
+    try {
+      const submittedAssignments = await AssignmentSubmission.find({})
+        .populate('assignment')
+        .populate('student', 'name email')
+        .sort({ createdAt: -1 });
+  
+      res.json(submittedAssignments);
+    } catch (error) {
+      console.error('Error fetching submitted assignments:', error);
+      res.status(500).json({ error: 'Failed to fetch submitted assignments' });
+    }
+  });
+   
+
+// Add this new route to your existing router
+router.get('/student-assignments/:studentId', async (req, res) => {
+    try {
+        const { studentId } = req.params;
+        
+        // Find the student and populate their assignments
+        const student = await Student.findById(studentId)
+            .populate({
+                path: 'assignments',
+                populate: {
+                    path: 'assignment',
+                    model: 'Assignment'
+                }
+            });
+
+        if (!student) {
+            return res.status(404).json({ error: 'Student not found' });
+        }
+
+        // Get all assignments for the student's courses
+        const allAssignments = await Assignment.find({
+            course: { $in: student.course }
+        });
+
+        // Map through all assignments and check submission status
+        const assignmentStatus = allAssignments.map(assignment => {
+            const submission = student.assignments.find(
+                sub => sub.assignment && sub.assignment._id.toString() === assignment._id.toString()
+            );
+
+            return {
+                _id: assignment._id,
+                title: assignment.title,
+                deadline: assignment.deadline,
+                submitted: !!submission,
+                submissionDate: submission ? submission.createdAt : null,
+                status: submission ? 'submitted' : 
+                         (new Date() > new Date(assignment.deadline) ? 'not completed' : 'pending')
+            };
+        });
+
+        res.json(assignmentStatus);
+    } catch (error) {
+        console.error('Error fetching student assignments:', error);
+        res.status(500).json({ error: 'Failed to fetch assignments' });
+    }
+});
+
+
+
 export default router;
 
