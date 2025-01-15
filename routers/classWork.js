@@ -38,7 +38,7 @@ router.post('/submit-class-work', async (req, res) => {
 router.get('/get-class-works', async (req, res) => {
   try {
     const { trainer } = req.query
-    console.log('Fetching class works for trainer:', trainer)
+    // console.log('Fetching class works for trainer:', trainer)
 
     const classWorks = await ClassWork.find({ trainer })
       .populate('batch', 'title')
@@ -46,7 +46,6 @@ router.get('/get-class-works', async (req, res) => {
       .populate('trainer', 'name')
       .sort({ createdAt: -1 })
 
-    console.log('Found class works:', classWorks.length)
     res.status(200).json(classWorks)
   } catch (error) {
     console.error('Error fetching class works:', error)
@@ -61,7 +60,7 @@ router.get('/student-class-works/:userId', async (req, res) => {
     console.log('Fetching class works for userId:', req.params.userId);
     
     const user = await User.findById(req.params.userId);
-    console.log('Found user:', user);
+    // console.log('Found user:', user);
 
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
@@ -72,7 +71,7 @@ router.get('/student-class-works/:userId', async (req, res) => {
     }
 
     const student = await Student.findOne({ email: user.email });
-    console.log('Found student:', student);
+    // console.log('Found student:', student);
 
     if (!student) {
       return res.status(404).json({ message: 'Student data not found' });
@@ -80,7 +79,7 @@ router.get('/student-class-works/:userId', async (req, res) => {
 
     // Get the section title from the student's section
     const studentSection = await Section.findById(student.section);
-    console.log('Student section:', studentSection);
+    // console.log('Student section:', studentSection);
 
     if (!studentSection) {
       return res.status(404).json({ message: 'Section not found' });
@@ -96,7 +95,7 @@ router.get('/student-class-works/:userId', async (req, res) => {
     .populate('course', 'title')
     .sort({ createdAt: -1 });
 
-    console.log('Found class works:', classWorks);
+    // console.log('Found class works:', classWorks);
     res.status(200).json(classWorks);
   } catch (error) {
     console.error('Error fetching class works:', error);

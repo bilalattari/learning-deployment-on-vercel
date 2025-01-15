@@ -10,6 +10,7 @@ import assignmentsRoutes from './routers/assignments.js';
 import assignmentsSubmissionRoutes from './routers/assignmentSubmission.js';
 import announcementRoutes from './routers/announcements.js'
 import personalAnnouncementRoutes from './routers/personalAnnouncement.js'
+import commentProblemRoutes from './routers/commentProblem.js';
 import examRoutes from './routers/examRoutes.js'
 import classWorkRoutes from './routers/classWork.js';
 import dotenv from "dotenv";
@@ -62,6 +63,7 @@ app.use('/assignment', assignmentsRoutes);
 app.use('/assignmentSubmission', assignmentsSubmissionRoutes);
 app.use('/announcements', announcementRoutes);
 app.use('/personalAnnouncements', personalAnnouncementRoutes);
+app.use('/commentProblem', commentProblemRoutes);
 app.use('/exam', examRoutes);
 app.use('/classWork', classWorkRoutes);
 
