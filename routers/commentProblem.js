@@ -2,6 +2,7 @@ import express from 'express';
 import multer from 'multer';
 import { v2 as cloudinary } from 'cloudinary';
 import CommentProblem from '../model/CommentProblem.js';
+import ClassWork from '../model/ClassWork.js';
 
 const router = express.Router();
 
@@ -62,5 +63,25 @@ router.get('/:classWorkId', async (req, res) => {
     }
   });  
 
+// GET route to fetch comments for a specific user
+router.get('/:userId', async (req, res) => {
+    try {
+      const comments = await CommentProblem.find({ student: req.params.userId })
+        .populate('student', 'name')
+        .populate('classWork', 'title')
+        .sort('-createdAt');
+  
+      if (!comments || comments.length === 0) {
+        return res.status(404).json({ message: 'No comments found for this user' });
+      }
+  
+      res.json(comments);
+    } catch (error) {
+      console.error('Error fetching comments:', error.message);
+      res.status(400).json({ message: error.message });
+    }
+  });
+  
+  
 export default router;
 

@@ -3,6 +3,7 @@ import express from "express";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import User from "../model/User.js";
+import Student from "../model/Student.js";
 
 const router = express.Router();
 
@@ -52,31 +53,51 @@ router.post("/login", async (req, res) => {
 
 router.get("/profile", async (req, res) => {
 	try {
-	  console.log("Cookies: ", req.cookies); // Debug cookies received
-  
-	  const token = req.cookies.token; // Check if token exists
-	  if (!token) return res.status(401).json({ msg: "Unauthorized" });
-  
-	  const decoded = jwt.verify(token, "secretkey");
-	  const user = await User.findById(decoded.id).select("-password");
-  
-	  res.status(200).json(user);
+		console.log("Cookies: ", req.cookies); // Debug cookies received
+
+		const token = req.cookies.token; // Check if token exists
+		if (!token) return res.status(401).json({ msg: "Unauthorized" });
+
+		const decoded = jwt.verify(token, "secretkey");
+		const user = await User.findById(decoded.id).select("-password");
+
+		res.status(200).json(user);
 	} catch (error) {
-	  console.error("Error: ", error.message);
-	  res.status(500).json({ msg: "Error fetching user data", error: error.message });
+		console.error("Error: ", error.message);
+		res.status(500).json({ msg: "Error fetching user data", error: error.message });
 	}
-  });
-  
-// GET route to fetch all users
+});
+
+// // GET route to fetch all users
+// router.get('/getAllUsers', async (req, res) => {
+// 	try {
+// 	  const users = await User.find({}, 'name email role');
+// 	  res.json(users);
+// 	} catch (error) {
+// 	  console.error('Error fetching users:', error);
+// 	  res.status(500).json({ error: 'Internal Server Error' });
+// 	}
+//   });
+
+// Modify the getAllUsers route
 router.get('/getAllUsers', async (req, res) => {
 	try {
-	  const users = await User.find({}, 'name email role');
-	  res.json(users);
-	} catch (error) {
-	  console.error('Error fetching users:', error);
-	  res.status(500).json({ error: 'Internal Server Error' });
-	}
-  });
+		const users = await User.find({}, 'name email role');
 
+		// Check if each student user exists in the Student database
+		const usersWithStatus = await Promise.all(users.map(async (user) => {
+			if (user.role === 'student') {
+				const studentExists = await Student.findOne({ email: user.email });
+				return { ...user.toObject(), studentStatus: studentExists ? 'registered' : 'unregistered' };
+			}
+			return user.toObject();
+		}));
+
+		res.json(usersWithStatus);
+	} catch (error) {
+		console.error('Error fetching users:', error);
+		res.status(500).json({ error: 'Internal Server Error' });
+	}
+});
 
 export default router;
