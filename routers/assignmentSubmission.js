@@ -180,7 +180,7 @@ router.get('/submitted-assignments', async (req, res) => {
     try {
       const submittedAssignments = await AssignmentSubmission.find({})
         .populate('assignment')
-        .populate('student', 'name email')
+        .populate('student', 'name email course')
         .sort({ createdAt: -1 });
   
       res.json(submittedAssignments);

@@ -12,6 +12,7 @@ import announcementRoutes from './routers/announcements.js'
 import personalAnnouncementRoutes from './routers/personalAnnouncement.js'
 import commentProblemRoutes from './routers/commentProblem.js';
 import teacherAnnouncementRoutes from './routers/teacherAnnouncement.js';
+import teachingActivityRoutes from './routers/teachingActivity.js';
 import examRoutes from './routers/examRoutes.js'
 import classWorkRoutes from './routers/classWork.js';
 import dotenv from "dotenv";
@@ -66,6 +67,7 @@ app.use('/announcements', announcementRoutes);
 app.use('/personalAnnouncements', personalAnnouncementRoutes);
 app.use('/commentProblem', commentProblemRoutes);
 app.use('/teacherAnnouncement', teacherAnnouncementRoutes);
+app.use('/teachingActivity', teachingActivityRoutes);
 app.use('/exam', examRoutes);
 app.use('/classWork', classWorkRoutes);
 
