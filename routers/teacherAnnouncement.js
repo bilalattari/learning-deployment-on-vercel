@@ -160,4 +160,28 @@ router.post('/add', async (req, res) => {
     }
 });
 
+router.get('/getTeacherAnnouncement', async (req, res) => {
+    try {
+        const { trainer } = req.query;
+        let query = {};
+
+        if (trainer) {
+            query.trainer = trainer;
+        }
+
+        const Announcement = await TeacherAnnouncement.find(query)
+            .populate('campus', 'title')
+            .populate('trainer', 'name')
+            // .populate('course', 'title')
+            .populate('batch', 'title')
+            // .populate('section', 'title')
+            .sort({ createdAt: -1 });
+
+        return res.status(200).json(Announcement);
+    } catch (error) {
+        console.error('Error fetching assignments:', error);
+        return res.status(500).json({ message: 'Error fetching assignments', error: error.message });
+    }
+});
+
 export default router;

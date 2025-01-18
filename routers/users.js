@@ -43,7 +43,7 @@ router.post("/login", async (req, res) => {
 		if (!isMatch) return res.status(401).json({ msg: "Invalid credentials" });
 
 		const token = generateToken(user);
-		res.cookie("token", token, { httpOnly: true });
+		res.cookie("token", token);
 
 		res.status(200).json({ msg: "Login successful", token, role: user.role, name: user.name, email: user.email, });
 	} catch (error) {
