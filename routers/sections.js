@@ -6,12 +6,30 @@ import Section from '../model/Section.js';
 
 const router = express.Router();
 
-// Get all sections
+// // Get all sections
+// router.get('/', async (req, res) => {
+//   try {
+//     const sections = await Section.find()
+//       .populate('course', 'title')
+//       .populate('batch', 'title');
+//     res.status(200).json(sections);
+//   } catch (error) {
+//     res.status(500).json({ error: error.message });
+//   }
+// });
+
 router.get('/', async (req, res) => {
+  const { course, batch } = req.query;
+  
   try {
-    const sections = await Section.find()
+    const query = {};
+    if (course) query.course = course;
+    if (batch) query.batch = batch;
+
+    const sections = await Section.find(query)
       .populate('course', 'title')
       .populate('batch', 'title');
+      
     res.status(200).json(sections);
   } catch (error) {
     res.status(500).json({ error: error.message });

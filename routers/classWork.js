@@ -36,23 +36,47 @@ router.post('/submit-class-work', async (req, res) => {
   }
 })
 
+// // New route to fetch class works for a student
+// router.get('/get-class-works', async (req, res) => {
+//   try {
+//     const { trainer } = req.query
+
+//     const classWorks = await ClassWork.find({ trainer })
+//       .populate('batch', 'title')
+//       .populate('campus', 'title')
+//       .populate('trainer', 'name')
+//       .sort({ createdAt: -1 })
+
+//     res.status(200).json(classWorks)
+//   } catch (error) {
+//     console.error('Error fetching class works:', error)
+//     res.status(500).json({ message: error.message })
+//   }
+
+// });
+
 router.get('/get-class-works', async (req, res) => {
   try {
-    const { trainer } = req.query
+    const { trainer, course, batch, section } = req.query;
 
-    const classWorks = await ClassWork.find({ trainer })
+    const filter = { trainer };
+    if (course) filter.course = course;
+    if (batch) filter.batch = batch;
+    if (section) filter.section = section;
+
+    const classWorks = await ClassWork.find(filter)
       .populate('batch', 'title')
       .populate('campus', 'title')
       .populate('trainer', 'name')
-      .sort({ createdAt: -1 })
+      .sort({ createdAt: -1 });
 
-    res.status(200).json(classWorks)
+    res.status(200).json(classWorks);
   } catch (error) {
-    console.error('Error fetching class works:', error)
-    res.status(500).json({ message: error.message })
+    console.error('Error fetching class works:', error);
+    res.status(500).json({ message: error.message });
   }
-
 });
+
 
 // New route to fetch class works for a student
 router.get('/student-class-works/:userId', async (req, res) => {
@@ -98,59 +122,6 @@ router.get('/student-class-works/:userId', async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
-
-// // New route to fetch teacher's class work activity
-// router.get('/teacher-class-work-activity/:userId', async (req, res) => {
-//   try {
-//     const user = await User.findById(req.params.userId);
-
-//     if (!user || user.role !== 'teacher') {
-//       return res.status(403).json({ message: 'User is not a teacher' });
-//     }
-
-//     const trainer = await Trainer.findOne({ email: user.email });
-
-//     if (!trainer) {
-//       return res.status(404).json({ message: 'Trainer data not found' });
-//     }
-
-//     const currentYear = new Date().getFullYear();
-//     const startOfYear = new Date(currentYear, 0, 1);
-//     const endOfYear = new Date(currentYear, 11, 31);
-
-//     const classWorks = await ClassWork.find({
-//       trainer: trainer._id,
-//       createdAt: { $gte: startOfYear, $lte: endOfYear }
-//     }).populate('section', 'title').populate('course', 'title').populate('batch', 'title');
-
-//     const activityData = classWorks.reduce((acc, classWork) => {
-//       const month = classWork.createdAt.getMonth();
-//       const sectionKey = `${classWork.course.title} - ${classWork.batch.title} - ${classWork.section.title}`;
-
-//       if (!acc[month]) {
-//         acc[month] = {};
-//       }
-
-//       if (!acc[month][sectionKey]) {
-//         acc[month][sectionKey] = 0;
-//       }
-
-//       acc[month][sectionKey]++;
-
-//       return acc;
-//     }, {});
-
-//     const formattedData = Object.entries(activityData).map(([month, sections]) => ({
-//       month: parseInt(month),
-//       ...sections
-//     }));
-
-//     res.status(200).json(formattedData);
-//   } catch (error) {
-//     console.error('Error fetching teacher class work activity:', error);
-//     res.status(500).json({ message: error.message });
-//   }
-// });
 
 // Route to fetch teacher's class work activity
 router.get('/teacher-class-work-activity/:userId', async (req, res) => {

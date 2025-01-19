@@ -5,6 +5,8 @@ import multer from "multer";
 import { v2 as cloudinary } from "cloudinary";
 import Assignment from '../model/Assignment.js';
 import Student from '../model/Student.js';
+import Course from '../model/Course.js';
+import Section from '../model/Section.js';
 
 const router = express.Router();
 
@@ -34,7 +36,7 @@ router.post('/submit', upload.single('file'), async (req, res) => {
         console.log('Received submission request:', req.body);
         console.log('Received file:', req.file);
         const { assignmentId, studentId, codeLink, deploymentLink, videoLink } = req.body;
-        
+
         const assignment = await Assignment.findById(assignmentId);
         const student = await Student.findById(studentId);
 
@@ -151,7 +153,7 @@ router.delete('/delete/:submissionId', async (req, res) => {
     try {
         const { submissionId } = req.params;
         const submission = await AssignmentSubmission.findById(submissionId);
-        
+
         if (!submission) {
             return res.status(404).json({ error: 'Submission not found' });
         }
@@ -182,20 +184,19 @@ router.get('/submitted-assignments', async (req, res) => {
         .populate('assignment')
         .populate('student', 'name email course')
         .sort({ createdAt: -1 });
-  
+
       res.json(submittedAssignments);
     } catch (error) {
       console.error('Error fetching submitted assignments:', error);
       res.status(500).json({ error: 'Failed to fetch submitted assignments' });
     }
   });
-   
 
 // Add this new route to your existing router
 router.get('/student-assignments/:studentId', async (req, res) => {
     try {
         const { studentId } = req.params;
-        
+
         // Find the student and populate their assignments
         const student = await Student.findById(studentId)
             .populate({
@@ -227,8 +228,8 @@ router.get('/student-assignments/:studentId', async (req, res) => {
                 deadline: assignment.deadline,
                 submitted: !!submission,
                 submissionDate: submission ? submission.createdAt : null,
-                status: submission ? 'submitted' : 
-                         (new Date() > new Date(assignment.deadline) ? 'not completed' : 'pending')
+                status: submission ? 'submitted' :
+                    (new Date() > new Date(assignment.deadline) ? 'not completed' : 'pending')
             };
         });
 
@@ -238,8 +239,6 @@ router.get('/student-assignments/:studentId', async (req, res) => {
         res.status(500).json({ error: 'Failed to fetch assignments' });
     }
 });
-
-
 
 export default router;
 
