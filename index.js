@@ -5,6 +5,7 @@ import coursesRoutes from "./routers/courses.js";
 import campusRoutes from "./routers/campus.js";
 import batchesRoutes from "./routers/batches.js";
 import sectionsRoutes from "./routers/sections.js";
+import moduleRoutes from "./routers/moduleRoute.js";
 import studentRoutes from './routers/student.js';
 import assignmentsRoutes from './routers/assignments.js';
 import assignmentsSubmissionRoutes from './routers/assignmentSubmission.js';
@@ -59,6 +60,7 @@ app.use("/courses", coursesRoutes);
 app.use("/campus", campusRoutes);
 app.use("/batches", batchesRoutes);
 app.use("/section", sectionsRoutes);
+app.use("/module", moduleRoutes);
 app.use("/student", studentRoutes);
 
 app.use('/assignment', assignmentsRoutes);

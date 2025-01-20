@@ -81,7 +81,7 @@ router.post('/submit', upload.single('file'), async (req, res) => {
         console.log('Assignment submission saved:', submission);
 
         // Update student with the submitted assignment
-        student.assignments.push(submission._id);
+        // student.assignments.push(submission._id);
         await student.save();
 
         res.status(201).json({ message: 'Assignment submitted successfully', submission });
