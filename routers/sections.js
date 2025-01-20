@@ -3,6 +3,7 @@ import express from 'express';
 import Course from '../model/Course.js';
 import Batch from '../model/Batch.js';
 import Section from '../model/Section.js';
+import Student from '../model/Student.js';
 
 const router = express.Router();
 
@@ -18,6 +19,25 @@ const router = express.Router();
 //   }
 // });
 
+// router.get('/', async (req, res) => {
+//   const { course, batch } = req.query;
+  
+//   try {
+//     const query = {};
+//     if (course) query.course = course;
+//     if (batch) query.batch = batch;
+
+//     const sections = await Section.find(query)
+//       .populate('course', 'title')
+//       .populate('batch', 'title');
+      
+//     res.status(200).json(sections);
+//   } catch (error) {
+//     res.status(500).json({ error: error.message });
+//   }
+// });
+
+// Get all sections with student count
 router.get('/', async (req, res) => {
   const { course, batch } = req.query;
   
@@ -29,8 +49,17 @@ router.get('/', async (req, res) => {
     const sections = await Section.find(query)
       .populate('course', 'title')
       .populate('batch', 'title');
+
+    // Get student count for each section
+    const sectionsWithStudentCount = await Promise.all(sections.map(async (section) => {
+      const studentCount = await Student.countDocuments({ section: section._id });
+      return {
+        ...section.toObject(),
+        studentCount
+      };
+    }));
       
-    res.status(200).json(sections);
+    res.status(200).json(sectionsWithStudentCount);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
