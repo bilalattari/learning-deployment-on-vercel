@@ -4,6 +4,8 @@ import Module from "../model/Module.js"
 import Topic from "../model/Topic.js"
 import Chapter from "../model/Chapter.js"
 import Course from "../model/Course.js"
+import Trainer from "../model/Trainer.js"
+import User from "../model/User.js"
 
 const router = express.Router()
 
@@ -150,49 +152,112 @@ router.post("/chapters", async (req, res) => {
 // Fetch courses with their associated modules, topics, and chapters
 router.get("/courseOutline", async (req, res) => {
     try {
-      // Fetch all courses
-      const courses = await Course.find();
-  
-      const coursesWithModulesTopicsChapters = await Promise.all(
-        courses.map(async (course) => {
-          // Fetch modules linked to this course
-          const modules = await Module.find({ courseId: course._id });
-  
-          // Fetch topics and chapters for each module
-          const modulesWithDetails = await Promise.all(
-            modules.map(async (module) => {
-              const topics = await Topic.find({ moduleId: module._id });
-  
-              // Fetch chapters for each topic
-              const topicsWithChapters = await Promise.all(
-                topics.map(async (topic) => {
-                  const chapters = await Chapter.find({ topicId: topic._id });
-                  return { ...topic.toObject(), chapters };
-                })
-              );
-  
-              return { ...module.toObject(), topics: topicsWithChapters };
+        // Fetch all courses
+        const courses = await Course.find();
+
+        const coursesWithModulesTopicsChapters = await Promise.all(
+            courses.map(async (course) => {
+                // Fetch modules linked to this course
+                const modules = await Module.find({ courseId: course._id });
+
+                // Fetch topics and chapters for each module
+                const modulesWithDetails = await Promise.all(
+                    modules.map(async (module) => {
+                        const topics = await Topic.find({ moduleId: module._id });
+
+                        // Fetch chapters for each topic
+                        const topicsWithChapters = await Promise.all(
+                            topics.map(async (topic) => {
+                                const chapters = await Chapter.find({ topicId: topic._id });
+                                return { ...topic.toObject(), chapters };
+                            })
+                        );
+
+                        return { ...module.toObject(), topics: topicsWithChapters };
+                    })
+                );
+
+                return { ...course.toObject(), modules: modulesWithDetails };
             })
-          );
-  
-          return { ...course.toObject(), modules: modulesWithDetails };
-        })
-      );
-  
-      res.status(200).json({
-        msg: "Courses, modules, topics, and chapters fetched successfully",
-        error: false,
-        data: coursesWithModulesTopicsChapters,
-      });
+        );
+
+        res.status(200).json({
+            msg: "Courses, modules, topics, and chapters fetched successfully",
+            error: false,
+            data: coursesWithModulesTopicsChapters,
+        });
     } catch (error) {
-      console.error("Error fetching course outline:", error);
-      res.status(500).json({
-        msg: "Failed to fetch course outline",
-        error: error.message,
-      });
+        console.error("Error fetching course outline:", error);
+        res.status(500).json({
+            msg: "Failed to fetch course outline",
+            error: error.message,
+        });
     }
-  });
-  
+});
+
+// New route to fetch course outlines for the trainer
+router.get("/course-outlines/:userId", async (req, res) => {
+    try {
+        const { userId } = req.params
+
+        // Validate userId
+        if (!userId) {
+            return res.status(400).json({ message: "User ID is required" })
+        }
+
+        // Find User by ID
+        const user = await User.findById(userId)
+        if (!user) {
+            return res.status(404).json({ message: "User not found" })
+        }
+
+        // Check role
+        if (user.role !== "teacher") {
+            return res.status(403).json({ message: "User is not a teacher" })
+        }
+
+        // Fetch Trainer Data
+        const trainer = await Trainer.findOne({ email: user.email }).populate("courses")
+
+        if (!trainer) {
+            return res.status(404).json({ message: "Trainer data not found" })
+        }
+
+        // Fetch course outlines for trainer's courses
+        const courseOutlines = await Promise.all(
+            trainer.courses.map(async (course) => {
+                const modules = await Module.find({ courseId: course._id })
+
+                const modulesWithDetails = await Promise.all(
+                    modules.map(async (module) => {
+                        const topics = await Topic.find({ moduleId: module._id })
+
+                        const topicsWithChapters = await Promise.all(
+                            topics.map(async (topic) => {
+                                const chapters = await Chapter.find({ topicId: topic._id })
+                                return { ...topic.toObject(), chapters }
+                            }),
+                        )
+
+                        return { ...module.toObject(), topics: topicsWithChapters }
+                    }),
+                )
+
+                return { ...course.toObject(), modules: modulesWithDetails }
+            }),
+        )
+
+        res.status(200).json({
+            trainerName: trainer.name,
+            email: trainer.email,
+            courseOutlines,
+        })
+    } catch (error) {
+        console.error("Error fetching course outlines:", error)
+        res.status(500).json({ error: "Failed to fetch course outlines." })
+    }
+})
+
 
 export default router
 
