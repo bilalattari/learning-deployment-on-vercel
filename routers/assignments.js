@@ -189,6 +189,45 @@ router.get('/', async (req, res) => {
   }
 });
 
+// Route to fetch assignments specific to a trainer based on the logged-in user's ID
+router.get('/trainerAssignments/:userId', async (req, res) => {
+  try {
+    // Fetch the logged-in user
+    const user = await User.findById(req.params.userId);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (user.role !== 'teacher') {
+      return res.status(403).json({ message: 'User is not a teacher' });
+    }
+
+    // Find the trainer based on the user's email
+    const trainer = await Trainer.findOne({ email: user.email });
+
+    if (!trainer) {
+      return res.status(404).json({ message: 'Trainer not found' });
+    }
+
+    // Fetch assignments linked to this trainer's ID
+    const assignments = await Assignment.find({ trainer: trainer._id })
+      .populate('course', 'title')
+      .populate('batch', 'title')
+      .populate('section', 'title')
+      .populate('campus', 'title')
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      totalAssignments: assignments.length, // Total count of assignments
+      assignments, // Detailed assignment data
+    });
+  } catch (error) {
+    console.error('Error fetching trainer assignments:', error);
+    res.status(500).json({ error: 'Failed to fetch trainer assignments.' });
+  }
+});
+
 router.get('/studentAssignments/:userId', async (req, res) => {
   try {
     const user = await User.findById(req.params.userId);

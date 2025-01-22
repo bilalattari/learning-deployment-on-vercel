@@ -177,20 +177,34 @@ router.delete('/delete/:submissionId', async (req, res) => {
     }
 });
 
-// Add this new route to your existing router
-router.get('/submitted-assignments', async (req, res) => {
+// Update this route or add a new one
+router.get("/submitted-assignments", async (req, res) => {
     try {
-      const submittedAssignments = await AssignmentSubmission.find({})
-        .populate('assignment')
-        .populate('student', 'name email course')
-        .sort({ createdAt: -1 });
+        const { trainer } = req.query
 
-      res.json(submittedAssignments);
+        if (!trainer) {
+            return res.status(400).json({ error: "Trainer ID is required" })
+        }
+
+        // First, get all assignments created by this trainer
+        const trainerAssignments = await Assignment.find({ trainer: trainer })
+
+        // Then, find all submissions for these assignments
+        const submittedAssignments = await AssignmentSubmission.find({
+            assignment: { $in: trainerAssignments.map((a) => a._id) },
+        })
+            .populate("assignment")
+            .populate("student", "name email course")
+            .sort({ createdAt: -1 })
+
+        console.log('submittedAssignments', submittedAssignments);
+
+        res.json(submittedAssignments)
     } catch (error) {
-      console.error('Error fetching submitted assignments:', error);
-      res.status(500).json({ error: 'Failed to fetch submitted assignments' });
+        console.error("Error fetching submitted assignments:", error)
+        res.status(500).json({ error: "Failed to fetch submitted assignments" })
     }
-  });
+})
 
 // Add this new route to your existing router
 router.get('/student-assignments/:studentId', async (req, res) => {

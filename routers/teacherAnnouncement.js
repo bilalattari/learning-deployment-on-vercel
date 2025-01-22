@@ -1,97 +1,8 @@
-// import express from 'express';
-// import Student from '../model/Student.js';
-// import nodemailer from 'nodemailer';
-// import TeacherAnnouncement from '../model/TeacherAnnouncement.js';
-
-// const router = express.Router();
-
-// // Create a transporter for sending emails
-// const transporter = nodemailer.createTransport({
-//     service: 'gmail', // You can use your preferred email service
-//     auth: {
-//         user: 'shoaibrazamemon170@gmail.com', // Replace with your email
-//         pass: 'dbze dxhh lgms kzmj' // Replace with your password or app password
-//     }
-// });
-
-// // Routes
-// router.post('/add', async (req, res) => {
-//     try {
-//         const { title, description, course, batch, section, trainer, campus } = req.body;
-
-//         // Create a new Personal Announcement
-//         const teacherAnnouncement = new TeacherAnnouncement({
-//             title,
-//             description,
-//             campus,
-//             course,
-//             batch,
-//             section,
-//             trainer,
-//         });
-
-//         // Save the personal announcement
-//         const savedTeacherAnnouncement = await teacherAnnouncement.save();
-
-//         // Find all students in the selected section
-//         const studentsInSection = await Student.find({ section });
-
-//         // Prepare email content
-//         const emailSubject = `New Announcement: ${title}`;
-//         const emailBody = `
-//             <h3>${title}</h3>
-//             <p>${description}</p>
-//         `;
-
-//         // Loop through students and send emails
-//         studentsInSection.forEach(student => {
-//             const mailOptions = {
-//                 from: 'shoaibrazamemon170@gmail.com',  // Sender's email
-//                 to: student.email,             // Student's email
-//                 subject: emailSubject,         // Subject line
-//                 html: emailBody                // HTML content
-//             };
-
-//             // Send email
-//             transporter.sendMail(mailOptions, (error, info) => {
-//                 if (error) {
-//                     console.log(`Error sending email to ${student.email}:`, error);
-//                 } else {
-//                     console.log(`Email sent to ${student.email}: ${info.response}`);
-//                 }
-//             });
-//         });
-
-//         // Send the response with the saved announcement
-//         res.status(201).json(savedTeacherAnnouncement);
-//     } catch (err) {
-//         console.log(err);
-//         res.status(500).json({ error: err.message });
-//     }
-// });
-
-// // // Routes
-// // router.get('/', async (req, res) => {
-// //     try {
-// //         const announcements = await PersonalAnnouncement.find()
-// //             .populate({ path: 'campus', select: 'title' })
-// //             .populate({ path: 'trainer', select: 'name' })
-// //             .populate({ path: 'course', select: 'title' })
-// //             .populate({ path: 'batch', select: 'title' })
-// //             .populate({ path: 'section', select: 'title' });
-// //         res.status(200).json(announcements);
-// //     } catch (err) {
-// //         res.status(500).json({ error: err.message });
-// //     }
-// // }
-// // );
-
-// export default router;
-
 import express from 'express';
 import TeacherAnnouncement from '../model/TeacherAnnouncement.js';
 import Student from '../model/Student.js';
 import nodemailer from 'nodemailer';
+import Trainer from '../model/Trainer.js';
 
 const router = express.Router();
 
@@ -128,7 +39,7 @@ router.post('/add', async (req, res) => {
         const studentsInSection = await Student.find({ section });
 
         // Prepare email content
-        const emailSubject = `New Announcement: ${title}`;
+        const emailSubject = `New Teacher Announcement: ${title}`;
         const emailBody = `
             <h3>${title}</h3>
             <p>${description}</p>
@@ -160,28 +71,58 @@ router.post('/add', async (req, res) => {
     }
 });
 
-router.get('/getTeacherAnnouncement', async (req, res) => {
+// router.get('/getTeacherAnnouncement', async (req, res) => {
+//     try {
+//         const { trainer } = req.query;
+//         let query = {};
+
+//         if (trainer) {
+//             query.trainer = trainer;
+//         }
+
+//         const Announcement = await TeacherAnnouncement.find(query)
+//             .populate('campus', 'title')
+//             .populate('trainer', 'name')
+//             // .populate('course', 'title')
+//             .populate('batch', 'title')
+//             // .populate('section', 'title')
+//             .sort({ createdAt: -1 });
+
+//         return res.status(200).json(Announcement);
+//     } catch (error) {
+//         console.error('Error fetching assignments:', error);
+//         return res.status(500).json({ message: 'Error fetching assignments', error: error.message });
+//     }
+// });
+
+
+router.get("/getTeacherAnnouncement", async (req, res) => {
     try {
-        const { trainer } = req.query;
-        let query = {};
-
-        if (trainer) {
-            query.trainer = trainer;
-        }
-
-        const Announcement = await TeacherAnnouncement.find(query)
-            .populate('campus', 'title')
-            .populate('trainer', 'name')
-            // .populate('course', 'title')
-            .populate('batch', 'title')
-            // .populate('section', 'title')
-            .sort({ createdAt: -1 });
-
-        return res.status(200).json(Announcement);
+      const { email } = req.query // Get email from query params
+  
+      if (!email) {
+        return res.status(400).json({ message: "Teacher email is required" })
+      }
+  
+      // Find the teacher by email
+      const teacher = await Trainer.findOne({ email })
+  
+      if (!teacher) {
+        return res.status(404).json({ message: "Teacher not found" })
+      }
+  
+      // Find announcements for this teacher
+      const announcements = await TeacherAnnouncement.find({ trainer: teacher._id })
+        .populate("campus", "title")
+        .populate("trainer", "name email")
+        .populate("batch", "title")
+        .sort({ createdAt: -1 })
+  
+      return res.status(200).json(announcements)
     } catch (error) {
-        console.error('Error fetching assignments:', error);
-        return res.status(500).json({ message: 'Error fetching assignments', error: error.message });
+      console.error("Error fetching announcements:", error)
+      return res.status(500).json({ message: "Error fetching announcements", error: error.message })
     }
-});
+  })
 
 export default router;
