@@ -218,6 +218,8 @@ router.get("/course-outlines/:userId", async (req, res) => {
 
         // Fetch Trainer Data
         const trainer = await Trainer.findOne({ email: user.email }).populate("courses")
+            .populate("batches")
+            .populate("sections");
 
         if (!trainer) {
             return res.status(404).json({ message: "Trainer data not found" })
@@ -250,8 +252,18 @@ router.get("/course-outlines/:userId", async (req, res) => {
         res.status(200).json({
             trainerName: trainer.name,
             email: trainer.email,
+            courses: courseOutlines,
+            batches: trainer.batches.map((batch) => ({
+                batchId: batch._id,
+                title: batch.title, // Add relevant batch details
+            })),
+            sections: trainer.sections.map((section) => ({
+                sectionId: section._id,
+                title: section.title, // Add relevant section details
+            })),
             courseOutlines,
         })
+        
     } catch (error) {
         console.error("Error fetching course outlines:", error)
         res.status(500).json({ error: "Failed to fetch course outlines." })
