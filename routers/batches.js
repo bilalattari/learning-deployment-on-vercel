@@ -4,25 +4,46 @@ import Course from "../model/Course.js";
 
 const router = express.Router();
 
-// In your API route (Express)
+// // In your API route (Express)
+// router.get("/", async (req, res) => {
+// 	try {
+// 		const batches = await Batch.find().populate('course'); // Populate the course title
+// 		res.status(200).json({
+// 			msg: "Batches fetched successfully",
+// 			error: false,
+// 			data: batches,
+// 		});
+// 		console.log('API Call Successful');
+// 	} catch (err) {
+// 		res.status(500).json({
+// 			msg: "Error fetching batches",
+// 			error: true,
+// 			data: [],
+// 		});
+// 		console.error(err);
+// 	}
+// });
+
 router.get("/", async (req, res) => {
+	const { course } = req.query;
+  
 	try {
-		const batches = await Batch.find().populate('course'); // Populate the course title
-		res.status(200).json({
-			msg: "Batches fetched successfully",
-			error: false,
-			data: batches,
-		});
-		console.log('API Call Successful');
+	  const filter = course ? { course } : {};
+	  const batches = await Batch.find(filter).populate('course');
+	  res.status(200).json({
+		msg: "Batches fetched successfully",
+		error: false,
+		data: batches,
+	  });
 	} catch (err) {
-		res.status(500).json({
-			msg: "Error fetching batches",
-			error: true,
-			data: [],
-		});
-		console.error(err);
+	  res.status(500).json({
+		msg: "Error fetching batches",
+		error: true,
+		data: [],
+	  });
 	}
-});
+  });
+  
 
 router.post("/", async (req, res) => {
 	const { title, description, course } = req.body;

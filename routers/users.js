@@ -3,11 +3,12 @@ import express from "express";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import User from "../model/User.js";
+import Student from "../model/Student.js";
 
 const router = express.Router();
 
 const generateToken = (user) => {
-	return jwt.sign({ id: user._id, email: user.email, role: user.role }, "secretkey", {
+	return jwt.sign({ id: user._id, email: user.email, role: user.role }, process.env.JWT_SECRET, {
 		expiresIn: "1h",
 	});
 };
@@ -42,6 +43,7 @@ router.post("/login", async (req, res) => {
 		if (!isMatch) return res.status(401).json({ msg: "Invalid credentials" });
 
 		const token = generateToken(user);
+		console.log('token', token)
 		res.cookie("token", token, { httpOnly: true });
 
 		res.status(200).json({ msg: "Login successful", token, role: user.role, name: user.name, email: user.email, });
@@ -51,32 +53,75 @@ router.post("/login", async (req, res) => {
 });
 
 router.get("/profile", async (req, res) => {
+	
 	try {
-	  console.log("Cookies: ", req.cookies); // Debug cookies received
-  
-	  const token = req.cookies.token; // Check if token exists
-	  if (!token) return res.status(401).json({ msg: "Unauthorized" });
-  
-	  const decoded = jwt.verify(token, "secretkey");
-	  const user = await User.findById(decoded.id).select("-password");
-  
-	  res.status(200).json(user);
+		// console.log("Cookies: ", req); // Debug cookies received
+
+		// const token = req.cookies.token; // Check if token exists
+		// if (!token) return res.status(401).json({ msg: "Unauthorized" });
+
+		// const decoded = jwt.verify(token, "secretkey");
+		// const user = await User.findById(decoded.id).select("-password");
+
+		const authHeader = req.headers.authorization; // Get the Authorization header
+
+		if (!authHeader || !authHeader.startsWith("Bearer ")) {
+		  return res.status(401).json({ msg: "Authorization token missing or invalid" });
+		}
+	  
+		const token = authHeader.split(" ")[1]; // Extract the token part (after "Bearer ")
+	  console.log('token in profile  ',token)
+		// Verify the token (using JWT or your chosen library)
+		console.log('jwtseceret', process.env.JWT_SECRET)
+		jwt.verify(token, process.env.JWT_SECRET, async(err, user) => {
+		  if (err) {console.log(err)
+			return res.status(403).json({ msg: "Invalid or expired token" });
+		  }
+	  
+		  // Token is valid, proceed with the request
+		  req.user = user; // Attach the decoded user data to the request object
+		  const singleUser = await User.findOne({email:user.email})
+		  console.log('singe user', singleUser)
+		  console.log('user in profile', user)
+		  res.status(200).json({ msg: "Token is valid", user:singleUser });
+		});
+	
 	} catch (error) {
-	  console.error("Error: ", error.message);
-	  res.status(500).json({ msg: "Error fetching user data", error: error.message });
+		console.error("Error: ", error.message);
+		res.status(500).json({ msg: "Error fetching user data", error: error.message });
 	}
-  });
-  
-// GET route to fetch all users
+});
+
+// // GET route to fetch all users
+// router.get('/getAllUsers', async (req, res) => {
+// 	try {
+// 	  const users = await User.find({}, 'name email role');
+// 	  res.json(users);
+// 	} catch (error) {
+// 	  console.error('Error fetching users:', error);
+// 	  res.status(500).json({ error: 'Internal Server Error' });
+// 	}
+//   });
+
+// Modify the getAllUsers route
 router.get('/getAllUsers', async (req, res) => {
 	try {
-	  const users = await User.find({}, 'name email role');
-	  res.json(users);
-	} catch (error) {
-	  console.error('Error fetching users:', error);
-	  res.status(500).json({ error: 'Internal Server Error' });
-	}
-  });
+		const users = await User.find({}, 'name email role');
 
+		// Check if each student user exists in the Student database
+		const usersWithStatus = await Promise.all(users.map(async (user) => {
+			if (user.role === 'student') {
+				const studentExists = await Student.findOne({ email: user.email });
+				return { ...user.toObject(), studentStatus: studentExists ? 'registered' : 'unregistered' };
+			}
+			return user.toObject();
+		}));
+
+		res.json(usersWithStatus);
+	} catch (error) {
+		console.error('Error fetching users:', error);
+		res.status(500).json({ error: 'Internal Server Error' });
+	}
+});
 
 export default router;

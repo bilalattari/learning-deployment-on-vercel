@@ -95,46 +95,138 @@ router.post('/upload', upload, async (req, res) => {
   }
 });
 
+// // // get Assignments
+// router.get('/', async (req, res) => {
+//   try {
+//     const { trainer, course, batch, section } = req.query;
+//     let query = {};
+
+//     if (trainer) {
+//       query.trainer = trainer;
+//     }
+
+//     if (course) {
+//       const courseDoc = await Course.findOne({ title: course });
+//       if (!courseDoc) {
+//         return res.status(400).json({ message: 'Course not found' });
+//       }
+//       query.course = courseDoc._id;
+//     }
+
+//     if (section) {
+//       const sectionDoc = await Section.findOne({ title: section });
+//       if (!sectionDoc) {
+//         return res.status(400).json({ message: 'Section not found' });
+//       }
+//       query.section = sectionDoc._id;
+//     }
+
+//     if (batch) {
+//       query.batch = batch;
+//     }
+
+//     const assignments = await Assignment.find(query)
+//       .populate('campus', 'title')
+//       .populate('trainer', 'name')
+//       .populate('course', 'title')
+//       .populate('batch', 'title')
+//       .populate('section', 'title')
+//       .sort({ createdAt: -1 });      
+
+//     return res.status(200).json(assignments);
+//   } catch (error) {
+//     console.error('Error fetching assignments:', error);
+//     return res.status(500).json({ message: 'Error fetching assignments', error: error.message });
+//   }
+// });
+
 router.get('/', async (req, res) => {
   try {
-    const { trainer } = req.query;
+    const { trainer, course, batch, section } = req.query;
     let query = {};
 
     if (trainer) {
       query.trainer = trainer;
     }
 
+    if (course) {
+      const courseDoc = await Course.findOne({ title: course });
+      if (!courseDoc) {
+        return res.status(400).json({ message: 'Course not found' });
+      }
+      query.course = courseDoc._id;
+    }
+
+    if (section) {
+      const sectionDoc = await Section.findOne({ title: section });
+      if (!sectionDoc) {
+        return res.status(400).json({ message: 'Section not found' });
+      }
+      query.section = sectionDoc._id;
+    }
+
+    if (batch) {
+      query.batch = batch;
+    }
+
     const assignments = await Assignment.find(query)
       .populate('campus', 'title')
-      .populate('trainer', 'name')
+      .populate('trainer')
       .populate('course', 'title')
       .populate('batch', 'title')
       .populate('section', 'title')
       .sort({ createdAt: -1 });
 
-    return res.status(200).json(assignments);
+    console.log('Assignments', assignments);
+
+    return res.status(200).json({
+      totalAssignments: assignments.length, // Return the count
+      assignments
+    });
   } catch (error) {
     console.error('Error fetching assignments:', error);
     return res.status(500).json({ message: 'Error fetching assignments', error: error.message });
   }
 });
 
-// Middleware to verify token and check if the user is a student
-const verifyStudentToken = (req, res, next) => {
-  const token = req.cookies.token;
-  if (!token) return res.status(401).json({ message: 'Unauthorized' });
-
+// Route to fetch assignments specific to a trainer based on the logged-in user's ID
+router.get('/trainerAssignments/:userId', async (req, res) => {
   try {
-    const decoded = jwt.verify(token, 'secretkey');
-    if (decoded.role !== 'student') {
-      return res.status(403).json({ message: 'Access denied. Students only.' });
+    // Fetch the logged-in user
+    const user = await User.findById(req.params.userId);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
     }
-    req.user = decoded;
-    next();
+
+    if (user.role !== 'teacher') {
+      return res.status(403).json({ message: 'User is not a teacher' });
+    }
+
+    // Find the trainer based on the user's email
+    const trainer = await Trainer.findOne({ email: user.email });
+
+    if (!trainer) {
+      return res.status(404).json({ message: 'Trainer not found' });
+    }
+
+    // Fetch assignments linked to this trainer's ID
+    const assignments = await Assignment.find({ trainer: trainer._id })
+      .populate('course', 'title')
+      .populate('batch', 'title')
+      .populate('section', 'title')
+      .populate('campus', 'title')
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      totalAssignments: assignments.length, // Total count of assignments
+      assignments, // Detailed assignment data
+    });
   } catch (error) {
-    res.status(400).json({ message: 'Invalid token' });
+    console.error('Error fetching trainer assignments:', error);
+    res.status(500).json({ error: 'Failed to fetch trainer assignments.' });
   }
-};
+});
 
 router.get('/studentAssignments/:userId', async (req, res) => {
   try {

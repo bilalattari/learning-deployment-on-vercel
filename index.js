@@ -5,12 +5,15 @@ import coursesRoutes from "./routers/courses.js";
 import campusRoutes from "./routers/campus.js";
 import batchesRoutes from "./routers/batches.js";
 import sectionsRoutes from "./routers/sections.js";
+import moduleRoutes from "./routers/moduleRoute.js";
 import studentRoutes from './routers/student.js';
 import assignmentsRoutes from './routers/assignments.js';
 import assignmentsSubmissionRoutes from './routers/assignmentSubmission.js';
 import announcementRoutes from './routers/announcements.js'
 import personalAnnouncementRoutes from './routers/personalAnnouncement.js'
 import commentProblemRoutes from './routers/commentProblem.js';
+import teacherAnnouncementRoutes from './routers/teacherAnnouncement.js';
+import teachingActivityRoutes from './routers/teachingActivity.js';
 import examRoutes from './routers/examRoutes.js'
 import classWorkRoutes from './routers/classWork.js';
 import dotenv from "dotenv";
@@ -57,6 +60,7 @@ app.use("/courses", coursesRoutes);
 app.use("/campus", campusRoutes);
 app.use("/batches", batchesRoutes);
 app.use("/section", sectionsRoutes);
+app.use("/module", moduleRoutes);
 app.use("/student", studentRoutes);
 
 app.use('/assignment', assignmentsRoutes);
@@ -64,6 +68,8 @@ app.use('/assignmentSubmission', assignmentsSubmissionRoutes);
 app.use('/announcements', announcementRoutes);
 app.use('/personalAnnouncements', personalAnnouncementRoutes);
 app.use('/commentProblem', commentProblemRoutes);
+app.use('/teacherAnnouncement', teacherAnnouncementRoutes);
+app.use('/teachingActivity', teachingActivityRoutes);
 app.use('/exam', examRoutes);
 app.use('/classWork', classWorkRoutes);
 
